@@ -1,0 +1,209 @@
+{
+  "flag": null,
+  "abuses": null,
+  "recoubs_by_users_channels": null,
+  "recoub": null,
+  "like": null,
+  "id": 9664,
+  "type": "Coub::Simple",
+  "permalink": "1pay3im",
+  "title": "\u0410\u0445\u0430\u0445\u0430 \u043f\u0440\u0435\u043a\u0440\u0430\u0442\u0438",
+  "visibility_type": "public",
+  "original_visibility_type": "public",
+  "channel_id": 1166976,
+  "created_at": "2012-11-24T14:57:14Z",
+  "updated_at": "2014-07-28T20:48:17Z",
+  "published_at": "2012-11-24T14:57:14Z",
+  "is_done": true,
+  "views_count": 2124511,
+  "cotd": null,
+  "cotd_at": null,
+  "shares_count": 218,
+  "reversed": false,
+  "original_sound": true,
+  "has_sound": true,
+  "recoub_to": null,
+  "file_versions": {
+    "web": {
+      "template": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_file\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/%{type}_%{version}_size_1376204276_%{version}.%{type}",
+      "types": [
+        "flv",
+        "mp4"
+      ],
+      "versions": [
+        "big",
+        "med",
+        "small"
+      ]
+    },
+    "web_chunks": {
+      "template": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_file\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/%{type}_%{version}_size_c%{chunk}_1376204276_chunk_%{chunk}_%{version}.flv",
+      "types": [
+        "flv",
+        "mp4"
+      ],
+      "versions": [
+        "big",
+        "med",
+        "small"
+      ],
+      "chunks": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "html5": {
+      "template": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_video_base64\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/chunk_%{chunk_num}_1377813411_ipad_video_base64",
+      "chunks": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "iphone": {
+      "url": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_file\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/iphone_1376204276_iphone.mp4"
+    },
+    "mobile": {
+      "audio_url": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_audio\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/1376204288_ipad_audio.mp3",
+      "base64_url": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_video_base64\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/1377813411_ipad_video_base64",
+      "base64_files": [
+        "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_video_base64\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/chunk_0_1377813411_ipad_video_base64",
+        "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_video_base64\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/chunk_1_1377813411_ipad_video_base64",
+        "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_ipad_video_base64\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/chunk_2_1377813411_ipad_video_base64"
+      ],
+      "frames_count": 45
+    }
+  },
+  "audio_versions": {
+
+  },
+  "flv_audio_versions": {
+
+  },
+  "image_versions": {
+    "template": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_image\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/%{version}_1381593112_00010.jpg",
+    "versions": [
+      "micro",
+      "tiny",
+      "age_restricted",
+      "ios_large",
+      "ios_mosaic",
+      "big",
+      "med",
+      "small",
+      "pinterest"
+    ]
+  },
+  "first_frame_versions": {
+    "template": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_timeline_pic\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/%{version}_1382537505_image.jpg",
+    "versions": [
+      "big",
+      "med",
+      "small",
+      "ios_large"
+    ]
+  },
+  "dimensions": {
+    "big": [
+      "640",
+      "360"
+    ],
+    "med": [
+      "640",
+      "360"
+    ],
+    "small": [
+      "400",
+      "224"
+    ]
+  },
+  "gif_versions": {
+    "big": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_gif_big\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/1386879082_1hpdy55_1pay3im.gif",
+    "email": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_gif_email\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/1386879087_1aamgm5_1pay3im.gif"
+  },
+  "site_w_h": [
+    640,
+    360
+  ],
+  "page_w_h": [
+    640,
+    360
+  ],
+  "site_w_h_small": [
+    310,
+    174
+  ],
+  "age_restricted": false,
+  "age_restricted_by_admin": false,
+  "allow_reuse": false,
+  "dont_crop": false,
+  "banned": false,
+  "global_safe": false,
+  "comments_count": 0,
+  "audio_file_url": null,
+  "external_download": false,
+  "channel": {
+    "id": 1166976,
+    "permalink": "ravingsane",
+    "title": "Georgy Birger",
+    "followers_count": 414,
+    "following_count": 341,
+    "avatar_versions": {
+      "template": "http:\/\/ell.akamai.coub.com\/get\/bucket:32.11\/p\/channel\/cw_avatar\/4f40082d6d1\/ce4099cac47d1657fe673\/%{version}_1405754973_471fol_att-url-download.jpg",
+      "versions": [
+        "medium",
+        "medium_2x",
+        "profile_pic",
+        "profile_pic_2x",
+        "profile_pic_new",
+        "profile_pic_new_2x",
+        "tiny",
+        "tiny_2x",
+        "small",
+        "small_2x",
+        "ios_large",
+        "ios_small"
+      ]
+    }
+  },
+  "file": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_file\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/iphone_1376204276_iphone.mp4",
+  "picture": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_image\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/med_1381593112_00010.jpg",
+  "timeline_picture": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_timeline_pic\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/ios_large_1382537505_image.jpg",
+  "small_picture": "http:\/\/cdn1.akamai.coub.com\/coub\/simple\/cw_image\/1e0af8db2af\/b69e3f00cd68c8d07a3ea\/ios_mosaic_1381593112_00010.jpg",
+  "percent_done": 100,
+  "tags": [
+
+  ],
+  "recoubs_count": 64,
+  "likes_count": 168,
+  "sorting_key": 1353769034,
+  "raw_video_id": 9631,
+  "uploaded_by_ios_app": false,
+  "media_block_audio": {
+
+  },
+  "media_block_video": {
+
+  },
+  "media_blocks": {
+
+  },
+  "raw_video_thumbnail_url": "http:\/\/cdn1.akamai.coub.com\/raw_video\/cw_image\/b6a4959b482\/4195767871ba16be24d73\/coub_media_1385107563_image.jpg",
+  "raw_video_title": null,
+  "video_block_banned": false,
+  "duration": 2.88,
+  "promo_winner": false,
+  "editorial_info": {
+
+  },
+  "href": "http:\/\/coub.com\/view\/1pay3im",
+  "referrer": {
+    "type": "unknown",
+    "uri": "no"
+  },
+  "remote_addr": "86.59.197.114",
+  "country_code": "HU"
+}

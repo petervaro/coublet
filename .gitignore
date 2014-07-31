@@ -1,0 +1,9 @@
+*.pyo
+*.sublime-project
+*.sublime-workspace
+
+cutils
+
+.ccom_cache
+.ccom_todo
+.clic_cache
