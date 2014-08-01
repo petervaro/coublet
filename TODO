@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.60.093 (20140801)                       ##
+##                       Version: 0.5.61.109 (20140801)                       ##
 ##                                                                            ##
 ##                 File: /Users/petervaro/Documents/coub/TODO                 ##
 ##                                                                            ##
@@ -19,7 +19,7 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 2 POSTS IN 1 FILES -----------------------------#
+#----------------------------- 3 POSTS IN 2 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
@@ -36,6 +36,14 @@ TODO:
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
 
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 3
+  - file: main.py
+    line: 74
+    note: |
+          _load_stream(index) is a private method
+          or that should be part of the public interface?
+
 
 
 #----------------------------- 2 POSTS IN 2 FILES -----------------------------#
@@ -50,7 +58,7 @@ QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
   - file: main.py
-    line: 123
+    line: 124
     note: |
           cwd or '.' ???
 

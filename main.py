@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.60.093 (20140801)                       ##
+##                       Version: 0.5.61.108 (20140801)                       ##
 ##                                                                            ##
 ##               File: /Users/petervaro/Documents/coub/main.py                ##
 ##                                                                            ##
@@ -57,10 +57,10 @@ class CoubApp:
                 self._temp = pickle.load(cache)
         # If first run of app
         except (FileNotFoundError, EOFError):
-            self._temp = {}
+            self._temp = {'temporary':[]}
 
         # Create API object
-        # self.source = api.CoubAPI()
+        self.source = api.CoubAPI()
 
         # Run base Qt Application
         self.qt_app = QApplication(sys.argv)
@@ -70,7 +70,15 @@ class CoubApp:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def load_menu(self, index):
         print(('FEATURED', 'NEWEST', 'RANDOM', 'USER')[index])
-        return self.load()
+        files = []
+        # TODO: _load_stream(index) is a private method
+        #       or that should be part of the public interface?
+        for packet in self.source._load_stream(index):
+            file = os.path.join(self._path, packet['id'] + '.mp4')
+            urllib.request.urlretrieve(url=packet['video'], filename=file)
+            files.append(file)
+        self._temp['temporary'].extend(files)
+        return files
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_exit(self, position, dimension):
@@ -78,17 +86,10 @@ class CoubApp:
         self._temp['startup_pos'] = position
         self._temp['startup_dim'] = dimension
         # Clean up
-        for file in self._temp.get('temporary', {}).values():
+        for file in self._temp['temporary']:
             os.remove(file)
         with open(self._file, 'wb') as cache:
             pickle.dump(self._temp, cache, pickle.HIGHEST_PROTOCOL)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def load(self):
-        file = os.path.join(self._path, 'test_coub.mp4')
-        urllib.request.urlretrieve(url=TEST_MP4, filename=file)
-        self._temp.setdefault('temporary', {})['test_coub'] = file
-        return (file,)*5
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def run(self):
