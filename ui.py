@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.50.015 (20140731)                       ##
+##                       Version: 0.5.50.090 (20140801)                       ##
 ##                                                                            ##
 ##                File: /Users/petervaro/Documents/coub/ui.py                 ##
 ##                                                                            ##
@@ -27,7 +27,8 @@ from PyQt5.QtCore import QDir, Qt, QUrl, pyqtSignal
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
-        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
+                             QPushButton, QSizePolicy, QSlider, QStyle,
+                             QVBoxLayout, QWidget, QDesktopWidget, QScrollArea)
 
 
 #------------------------------------------------------------------------------#
@@ -36,6 +37,8 @@ class CoubPostUI(QWidget):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, parent=None, file=None):
         super(CoubPostUI, self).__init__(parent)
+
+        # TODO: likes, external link
 
         # Flags
         self._post = True
@@ -67,7 +70,7 @@ class CoubPostUI(QWidget):
         self.mousePressEvent = self.on_mouse_pressed
 
         # Set size and load content
-        self.resize(320, 240)
+        self.setFixedSize(320, 240)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -89,6 +92,8 @@ class CoubPostUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_error(self):
+        # TODO: make error label appear on the video itself
+        #       test: CoubPost(parent, None) --> error loading media
         self._post = False
         self.error_label.setText('ERROR: ' + self.player.errorString())
 
@@ -123,32 +128,98 @@ class CoubPostUI(QWidget):
             self.player.play()
 
 
+
+#------------------------------------------------------------------------------#
+class CoubStreamUI(QWidget):
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def __init__(self, parent=None):
+        super(CoubStreamUI, self).__init__(parent)
+
+        # Set layout
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def add_posts(self, *posts):
+        print(posts)
+        # Add new posts to stream
+        for post in posts:
+            self.layout.addWidget(CoubPostUI(self, post))
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def clear(self):
+        # Remove all posts from stream
+        for i in reversed(range(self.layout.count())):
+            # ??? setParent() or close() ???
+            self.layout.itemAt(i).widget().setParent(None)
+
+
+
 #------------------------------------------------------------------------------#
 class CoubAppUI(QWidget):
 
+    TITLE = 'COUB'
+    MENU = 'featured', 'newest', 'random', 'user'
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, root, parent=None):
-        super(CoubAppUI, self).__init__(parent)
+    def __init__(self, root, x, y, width, height):
+        super(CoubAppUI, self).__init__(None)
         self.root = root
 
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.setWindowTitle(self.TITLE)
+
+        self.layout = layout = QVBoxLayout()
+        self.menu = menu = QHBoxLayout()
+        self.posts = posts = QScrollArea()
+
+        # Finalise layout
+        layout.addWidget(posts)
+        layout.addLayout(menu)
+        self.setLayout(layout)
+
+        self.streams = streams =[]
+        for i, menu_item in enumerate(self.MENU):
+            # Add menu item
+            menu_button = QPushButton(menu_item)
+            # b is needed because of the implementation `void triggered(bool = 0)`
+            menu_button.clicked.connect(lambda b, n=i: self.on_menu_button_pressed(n))
+            menu.addWidget(menu_button)
+            # Add stream
+            stream = CoubStreamUI(self)
+            streams.append(stream)
+            # stream.hide()
+
+        # Set last stream selected
+        self.stream = stream
 
         # Just for the sake of under-scored names ;)
         self.closeEvent = self.on_exit
 
-        # Set default size
-        # TODO: Store size in cache folder
-        self.resize(320, 768)
+        # If position have not been set before
+        if x is NotImplemented:
+            screen = QDesktopWidget().screenGeometry()
+            x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
+        # Set window position and dimension
+        self.setGeometry(x, y, width, height)
+
+        # Load first stream
+        self.on_menu_button_pressed(0)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_exit(self, event):
-        self.root.on_exit()
+        dim = self.frameGeometry()
+        self.root.on_exit((dim.x(), dim.y()), (dim.width(), dim.height()))
         event.accept()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def append(self, *files):
-        # Create post for each file
-        for file in files:
-            post = CoubPostUI(self, file)
-            self.layout.addWidget(post)
+    def on_menu_button_pressed(self, index):
+        # Hide previous stream
+        # self.stream.hide()
+        self.stream = stream = self.streams[index]
+        # stream.show()
+        posts = self.posts
+        posts.takeWidget()
+        posts.setWidget(stream)
+        posts.setWidgetResizable(True)
+        stream.add_posts(*self.root.load_menu(index))

@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.50.015 (20140731)                       ##
+##                       Version: 0.5.50.061 (20140801)                       ##
 ##                                                                            ##
 ##                File: /Users/petervaro/Documents/coub/api.py                ##
 ##                                                                            ##
@@ -23,7 +23,7 @@
 from json import loads
 from urllib.request import urlopen
 
-PER_PAGE  = 10
+PER_PAGE  = 5
 EXPLORE   = 'http://coub.com/api/v1/timeline/{}.json?page={}&per_page={}'
 TIMELINES = 'explore', 'hot'#, 'random'
 
@@ -36,9 +36,20 @@ def _ruby_format(string, **kwargs):
 #------------------------------------------------------------------------------#
 class CoubAPI:
 
+    # {'thumb': None,
+    #  'perma': None,
+    #  'ratio': 0,
+    #  'video': None,
+    #  'audio': None,
+    #  'likes': 0}
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self):
         self.reload()
+
+
+    # methods: explore_random(), user_id(), etc...
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def explore(self):

@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.50.015 (20140731)                       ##
+##                       Version: 0.5.60.093 (20140801)                       ##
 ##                                                                            ##
 ##                 File: /Users/petervaro/Documents/coub/TODO                 ##
 ##                                                                            ##
@@ -19,13 +19,39 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
+#----------------------------- 2 POSTS IN 1 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: ui.py
-    line: 141
+    line: 41
     note: |
-          Store size in cache folder
+          likes, external link
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: ui.py
+    line: 95
+    note: |
+          make error label appear on the video itself
+          test: CoubPost(parent, None) --> error loading media
+
+
+
+#----------------------------- 2 POSTS IN 2 FILES -----------------------------#
+QUESTION:
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 1
+  - file: ui.py
+    line: 154
+    note: |
+          setParent() or close() ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: main.py
+    line: 123
+    note: |
+          cwd or '.' ???
 
 

@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.50.015 (20140731)                       ##
+##                       Version: 0.5.60.093 (20140801)                       ##
 ##                                                                            ##
 ##               File: /Users/petervaro/Documents/coub/main.py                ##
 ##                                                                            ##
@@ -20,10 +20,11 @@
 ######################################################################## INFO ##
 
 # Import python modules
+import os
+import sys
+import pickle
+import os.path
 import urllib.request
-from sys import argv, exit
-from os.path import join, expanduser
-from os import remove, makedirs, getcwd
 
 # Import PyQt5 modules
 from PyQt5.QtWidgets import QApplication
@@ -40,35 +41,63 @@ TEST_MP4 = ('http://cdn1.akamai.coub.com/coub/simple/cw_file/1e0af8db2af/'
 #------------------------------------------------------------------------------#
 class CoubApp:
 
+    FILE = 'cache'
+    PATH = '.coub_cache'
+
     def __init__(self):
-        # Create cache folder
-        self.folder = join(expanduser('~'), '.coub_cache')
-        makedirs(self.folder, exist_ok=True)
-        # Create list for temporary files
-        self._temp = []
+        # Create cache folder and file
+        self._path = os.path.join(os.path.expanduser('~'), self.PATH)
+        self._file = os.path.join(self._path, self.FILE)
+        os.makedirs(self._path, exist_ok=True)
+
+
+        # If load previously saved data
+        try:
+            with open(self._file, 'rb') as cache:
+                self._temp = pickle.load(cache)
+        # If first run of app
+        except (FileNotFoundError, EOFError):
+            self._temp = {}
+
+        # Create API object
+        # self.source = api.CoubAPI()
+
         # Run base Qt Application
-        self.qt_app = QApplication(argv)
+        self.qt_app = QApplication(sys.argv)
         self.qt_app.setApplicationName('COUB')
 
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_exit(self):
-        # Clean up
-        for file in self._temp:
-            remove(file)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def load(self, app):
-        file = join(self.folder, 'test_coub.mp4')
+    def load_menu(self, index):
+        print(('FEATURED', 'NEWEST', 'RANDOM', 'USER')[index])
+        return self.load()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_exit(self, position, dimension):
+        # Store info
+        self._temp['startup_pos'] = position
+        self._temp['startup_dim'] = dimension
+        # Clean up
+        for file in self._temp.get('temporary', {}).values():
+            os.remove(file)
+        with open(self._file, 'wb') as cache:
+            pickle.dump(self._temp, cache, pickle.HIGHEST_PROTOCOL)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def load(self):
+        file = os.path.join(self._path, 'test_coub.mp4')
         urllib.request.urlretrieve(url=TEST_MP4, filename=file)
-        self._temp.append(file)
-        app.append(file, file, file)
+        self._temp.setdefault('temporary', {})['test_coub'] = file
+        return (file,)*5
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def run(self):
+        # Get previous position and dimension
+        x, y = self._temp.setdefault('startup_pos', (NotImplemented, 0))
+        width, height = self._temp.setdefault('startup_dim', (320, 768))
         # Create CoubApp
-        app = ui.CoubAppUI(self)
+        app = ui.CoubAppUI(self, x, y, width, height)
         app.show()
-        self.load(app)
         return self.qt_app.exec_()
 
 
@@ -87,10 +116,11 @@ if __name__ == '__main__':
         version(sub_max=9,
                 rev_max=99,
                 build_max=999)
-        cwd = getcwd()
+        cwd = os.getcwd()
         # Collect all special comments
         collect('.', exceptions=exceptions)
         # Update header comments
+        # ??? cwd or '.' ???
         header(cwd, exceptions=exceptions)
     # Run application
-    exit(CoubApp().run())
+    sys.exit(CoubApp().run())
