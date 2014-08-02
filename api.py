@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.180 (20140802)                       ##
+##                       Version: 0.5.61.291 (20140803)                       ##
 ##                                                                            ##
 ##                                File: api.py                                ##
 ##                                                                            ##
@@ -37,6 +37,7 @@ def _ruby_format(string, **kwargs):
 
 #------------------------------------------------------------------------------#
 def _create_packet(source):
+    # Create new packet
     packet = {}
 
     # Link to thumbnail image
@@ -50,7 +51,11 @@ def _create_packet(source):
     packet['thumb'] = [ifile]
 
     # Perma link
-    packet['perma'] = source.get('href', 'http://coub.com')
+    try:
+        perma = 'http://coub.com/view/' + source['permalink']
+    except KeyError:
+        perma = 'http://coub.com'
+    packet['perma'] = perma
 
     # Set aspect ration
     try:
@@ -73,19 +78,14 @@ def _create_packet(source):
 
     # Link to audio
     packet['audio'] = source.get('audio_file_url', None)
-
     # Number of likes
     packet['likes'] = source.get('likes_count', 0)
-
     # Number of recoubs
     packet['share'] = source.get('recoubs_count', 0)
-
     # Title of masterpiece ;)
     packet['title'] = source.get('title', '')
-
     # Creator of coub
     packet['user'] = source.get('user_id', None)
-
     # ID
     packet['id'] = str(source.get('id', 0))
 

@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.186 (20140802)                       ##
+##                       Version: 0.5.61.294 (20140803)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -39,20 +39,13 @@ TODO:
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 3
-  - file: api.py
-    line: 125
-    note: |
-          if current is greater than total?
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
   - file: main.py
     line: 42
     note: |
           read version from file (where will VERSION file be in the final app?)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
+  # 4
   - file: main.py
     line: 102
     note: |
@@ -61,16 +54,23 @@ TODO:
           and what about the user stream? search?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 5
+  - file: api.py
+    line: 125
+    note: |
+          if current is greater than total?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 6
   - file: ui.py
-    line: 47
+    line: 50
     note: |
           likes, external link
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 7
   - file: ui.py
-    line: 113
+    line: 158
     note: |
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
@@ -78,25 +78,19 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 8
   - file: ui.py
-    line: 272
+    line: 356
     note: |
           check if there is an on-going update
+          main.py::CoubApp should provide PER_PAGES -> CoubAPI and to this
 
 
 
-#----------------------------- 2 POSTS IN 2 FILES -----------------------------#
+#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
 QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: main.py
-    line: 190
-    note: |
-          cwd or '.' ???
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
   - file: ui.py
-    line: 176
+    line: 260
     note: |
           setParent() or close() ???
 

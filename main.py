@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.186 (20140802)                       ##
+##                       Version: 0.5.61.231 (20140802)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -160,7 +160,7 @@ class CoubApp:
     def run(self):
         # Get previous position and dimension
         x, y = self._temp.setdefault('startup_pos', (NotImplemented, 0))
-        width, height = self._temp.setdefault('startup_dim', (320, 768))
+        width, height = self._temp.setdefault('startup_dim', (340, 768))
         # Create CoubApp
         app = ui.CoubAppUI(self, x, y, width, height, self.MENU)
         app.show()
@@ -180,14 +180,10 @@ if __name__ == '__main__':
                       'comment.py', 'check.py', 'table.py')
         exceptions += EXCEPTIONS
         # Update version
-        v, *rest = version(sub_max=9,
-                           rev_max=99,
-                           build_max=999)
-        cwd = os.getcwd()
+        v = version(sub_max=9, rev_max=99, build_max=999)[:3]
         # Collect all special comments
         collect('.', exceptions=exceptions)
         # Update header comments
-        # ??? cwd or '.' ???
         header('.', exceptions=exceptions)
     # Run application
     sys.exit(CoubApp(v).run())

@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.186 (20140802)                       ##
+##                       Version: 0.5.61.294 (20140803)                       ##
 ##                                                                            ##
 ##                                File: ui.py                                 ##
 ##                                                                            ##
@@ -22,6 +22,7 @@
 # Import Python modules
 import os
 import queue
+import webbrowser
 
 # Import PyQt5 modules
 from PyQt5.QtGui import QPixmap
@@ -32,13 +33,15 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
                              QPushButton, QSizePolicy, QSlider, QStyle,
                              QVBoxLayout, QWidget, QDesktopWidget, QScrollArea)
 
+# Import coub modules
+import wdgt
 
 #------------------------------------------------------------------------------#
 class CoubPostUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, parent=None, packet=None):
-        super(CoubPostUI, self).__init__(parent)
+        super().__init__(parent)
 
         # Get proper dimensions
         width = 320
@@ -49,7 +52,17 @@ class CoubPostUI(QWidget):
         # Flags
         self._post = True
         self._mute = False
-        self._loop = False
+        self._audio_loop = False
+        self._video_loop = False
+
+        self._link = packet['perma']
+
+
+
+        #   CHECK WHY IS THERE TWO SPINNERS
+        #   CONNECT SCROLLING UPDATE AND RELOAD
+
+
 
         # Preview
         thumb = QPixmap(packet['thumb'][1])
@@ -57,16 +70,22 @@ class CoubPostUI(QWidget):
         self.image = image = QLabel(self)
         image.setPixmap(thumb.scaled(width, height))
 
-        # Media player
-        self.player = player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        # Media players
+        self.video_player = video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         # Video Area
         self.video = video = QVideoWidget(self)
+        audio = packet['audio']
+        if audio:
+            self.audio_player = audio_player = QMediaPlayer(None)
+            audio_player.stateChanged.connect(self.on_audio_state_changed)
+            audio_player.error.connect(self.on_error)
+            audio_player.setMedia(QMediaContent(QUrl(audio)))
 
-        # Set area, and event handlers of media player
-        player.setVideoOutput(video)
-        player.stateChanged.connect(self.on_state_changed)
-        player.error.connect(self.on_error)
-        player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
+        # Set area, and event handlers of media video_player
+        video_player.setVideoOutput(video)
+        video_player.stateChanged.connect(self.on_video_state_changed)
+        video_player.error.connect(self.on_error)
+        video_player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
 
         # Set error label
         self.error_label = error_label = QLabel()
@@ -85,28 +104,54 @@ class CoubPostUI(QWidget):
         error_label.hide()
 
         # Just for the sake of under-scored names ;)
-        self.mousePressEvent = self.on_mouse_pressed
+        self.mouseReleaseEvent = self.on_mouse_release
+
+        # Set mouse events
+        interval = QApplication.instance().doubleClickInterval()
+        self._clicker = wdgt.MouseClick(interval,
+                                        l_single=self.play,
+                                        l_double=self.open,
+                                        r_single=self.mute)
 
         # Set size and load content
         self.setFixedSize(width, height)
 
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_mouse_release(self, event):
+        self._clicker.click(event.button())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_mouse_pressed(self, event):
-        if event.button() == Qt.LeftButton:
-            self.play()
-        if event.button() == Qt.RightButton:
-            self.mute()
+    def open(self):
+        # Stop playing
+        self._audio_loop = False
+        self._video_loop = False
+        self.video_player.pause()
+        try:
+            self.audio_player.pause()
+        except AttributeError:
+            pass
+        # Open in browser
+        webbrowser.open_new_tab(self._link)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_state_changed(self, state):
+    def on_audio_state_changed(self, event):
         # If looping
-        if self._loop:
-            self.player.play()
+        if self._audio_loop:
+            self.audio_player.play()
         # If paused
         else:
-            # Continue looping
-            self._loop = True
+            # Reset looping
+            self._audio_loop = True
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_video_state_changed(self, state):
+        # If looping
+        if self._video_loop:
+            self.video_player.play()
+        # If paused
+        else:
+            # Reset looping
+            self._video_loop = True
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_error(self):
@@ -114,7 +159,7 @@ class CoubPostUI(QWidget):
         #       test: CoubPost(parent, None) --> error loading media
         self._post = False
         self.error_label.show()
-        self.error_label.setText('ERROR: ' + self.player.errorString())
+        self.error_label.setText('ERROR: ' + self.video_player.errorString())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def mute(self):
@@ -124,11 +169,19 @@ class CoubPostUI(QWidget):
         # If already muted
         elif self._mute:
             self._mute = False
-            self.player.setVolume(100)
+            self.video_player.setVolume(100)
+            try:
+                self.audio_player.setVolume(100)
+            except AttributeError:
+                pass
         # If needs to be muted
         else:
             self._mute = True
-            self.player.setVolume(0)
+            self.video_player.setVolume(0)
+            try:
+                self.audio_player.setVolume(0)
+            except AttributeError:
+                pass
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def play(self):
@@ -136,17 +189,27 @@ class CoubPostUI(QWidget):
         if not self._post:
             return
         # If playing
-        elif self.player.state() == QMediaPlayer.PlayingState:
+        elif self.video_player.state() == QMediaPlayer.PlayingState:
             # Stop playing the loop
-            self._loop = False
-            self.player.pause()
+            self._audio_loop = False
+            self._video_loop = False
+            self.video_player.pause()
+            try:
+                self.audio_player.pause()
+            except AttributeError:
+                pass
         # If paused
         else:
             # Start playing the loop
-            self._loop = True
+            self._audio_loop = True
+            self._video_loop = True
             self.image.hide()
             self.video.show()
-            self.player.play()
+            self.video_player.play()
+            try:
+                self.audio_player.play()
+            except AttributeError:
+                pass
 
 
 
@@ -155,19 +218,40 @@ class CoubStreamUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, parent=None):
-        super(CoubStreamUI, self).__init__(parent)
+        super().__init__(parent)
 
         # Set layout
         self.layout = layout = QVBoxLayout()
+
+        self.spinner = wdgt.AnimatedGif(os.path.join('img', 'spinner.gif'))
+        self.spinner.setAlignment(Qt.AlignHCenter)
+        self.spinner.setMargin(10)
+        self.spinner.hide()
+
         layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(10, 0, 10, 0)
+        layout.addStretch(0)
         self.setLayout(layout)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def add_posts(self, *packets):
         # Add new posts to stream
+        layout = self.layout
+        self.spinner.hide()
         for packet in packets:
-            self.layout.addWidget(CoubPostUI(self, packet))
+            # Insert before space
+            layout.insertWidget(layout.count() - 2,
+                                CoubPostUI(self, packet),
+                                alignment=Qt.AlignTop)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def spin(self):
+        # Insert before space
+        length = self.layout.count()
+        self.layout.insertWidget(0 if length == 1 else length - 2,
+                                 self.spinner,
+                                 alignment=Qt.AlignTop)
+        self.spinner.show()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def clear(self):
@@ -185,7 +269,7 @@ class CoubAppUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, root, x, y, width, height, menu_labels):
-        super(CoubAppUI, self).__init__(None)
+        super().__init__(None)
         self.root = root
         self.menu_labels = menu_labels
 
@@ -194,7 +278,7 @@ class CoubAppUI(QWidget):
         self.layout = layout = QVBoxLayout()
         self.menu = menu = QHBoxLayout()
         self.posts = posts = QScrollArea()
-        posts.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        posts.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         posts.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
@@ -217,7 +301,7 @@ class CoubAppUI(QWidget):
             menu_button.clicked.connect(lambda b, n=i: self.on_menu_button_pressed(n))
             menu.addWidget(menu_button)
             # Add stream
-            stream = CoubStreamUI(self)
+            stream = CoubStreamUI()
             streams.append(stream)
             # Add stream specific packet queue
             packets.append(queue.Queue())
@@ -270,6 +354,7 @@ class CoubAppUI(QWidget):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _on_update_stream(self, value):
         # TODO: check if there is an on-going update
+        #       main.py::CoubApp should provide PER_PAGES -> CoubAPI and to this
         if value and value == self.posts.verticalScrollBar().maximum():
             print('[SCROLL] {} / {}'.format(value, self.posts.verticalScrollBar().maximum()))
 
@@ -287,4 +372,5 @@ class CoubAppUI(QWidget):
         posts.setWidget(self.stream)
         posts.setWidgetResizable(True)
         # Load data
+        self.stream.spin()
         self.root.load_menu(index, self._packets[index])
