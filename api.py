@@ -4,9 +4,9 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.109 (20140801)                       ##
+##                       Version: 0.5.61.180 (20140802)                       ##
 ##                                                                            ##
-##                File: /Users/petervaro/Documents/coub/api.py                ##
+##                                File: api.py                                ##
 ##                                                                            ##
 ##           Designed and written by Peter Varo. Copyright (c) 2014           ##
 ##             License agreement is provided in the LICENSE file              ##
@@ -21,17 +21,18 @@
 
 # Import python modules
 import json
+import queue
 import urllib.request
 
-PER_PAGE  = 5
-EXPLORE   = 'http://coub.com/api/v1/timeline/{}.json?page={}&per_page={}'
-TIMELINES = 'explore', 'hot'#, 'random'
+# Import coub modules
+import com
 
 #------------------------------------------------------------------------------#
 def _ruby_format(string, **kwargs):
     for keyword, value in kwargs.items():
         string = string.replace('%{' + keyword + '}', value)
     return string
+
 
 
 #------------------------------------------------------------------------------#
@@ -46,7 +47,7 @@ def _create_packet(source):
         ifile = _ruby_format(image['template'], version='small')
     except KeyError:
         ifile = None
-    packet['thumb'] = ifile
+    packet['thumb'] = [ifile]
 
     # Perma link
     packet['perma'] = source.get('href', 'http://coub.com')
@@ -54,9 +55,9 @@ def _create_packet(source):
     # Set aspect ration
     try:
         width, height = source['dimensions']['small']
-        ratio = float(width) / float(height)
+        ratio = float(height) / float(width)
     except (KeyError, ValueError):
-        ratio = 0
+        ratio = 1
     packet['ratio'] = ratio
 
     # Link to video
@@ -68,7 +69,7 @@ def _create_packet(source):
         vfile = _ruby_format(video['template'], version='small', type='mp4')
     except KeyError:
         vfile = None
-    packet['video'] = vfile
+    packet['video'] = [vfile]
 
     # Link to audio
     packet['audio'] = source.get('audio_file_url', None)
@@ -96,31 +97,32 @@ def _create_packet(source):
 #------------------------------------------------------------------------------#
 class CoubAPI:
 
-    URL = 'http://coub.com/api/v1/timeline/explore{}.json?page={}&per_page={}'
-    STREAMS = ('',  #explore
-               '/random',
-               '/newest')
+    URL = 'http://coub.com/api/v1/timeline/{}.json?page={}&per_page={}'
     PER_PAGE = 5
+    STREAMS = ('explore',
+               'explore/newest',
+               'explore/random')
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self):
-        # Storage for streams
-        self.streams = {}
-
-        # [total_pages, current_page]
+        # counter => [total_pages, current_page]
         self.counters = [[1, 1] for i in self.STREAMS]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _load_stream(self, index):
-        counters = self.counters
-        counter, limit = counters[index]
-        if counter <= limit:
-            url = self.URL.format(self.STREAMS[index], counter, self.PER_PAGE)
-            data = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
-            counters[index][0] = data.get('total_pages', 0)
-            counters[index][1] += 1
-            return [_create_packet(d) for d in data.get('coubs', ())]
-        return []
+    def _load_stream(self, data, index):
+        self.counters[index][0] = data.get('total_pages', 0)
+        self.counters[index][1] += 1
+        return [_create_packet(d) for d in data.get('coubs', ())]
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _open_stream(self, index, queue):
+        # If given stream has more pages to load
+        total, current = self.counters[index]
+        if current <= total:
+            # Format URL and start downloading JSON file
+            url = self.URL.format(self.STREAMS[index], current, self.PER_PAGE)
+            com.DownloadJson(url, queue).start()
+        # TODO: if current is greater than total?
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def explore(self): return self._load_stream(0)
@@ -130,26 +132,6 @@ class CoubAPI:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def newest(self): return self._load_stream(2)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def reload(self):
-        for timeline in TIMELINES:
-            data = loads(urlopen(EXPLORE.format(timeline, 1, PER_PAGE)).read().decode('utf-8'))
-            setattr(self, '_{}_pages'.format(timeline), data['total_pages'])
-            setattr(self, '_{}_coubs '.format(timeline), data['coubs'])
-            setattr(self, '_{}_page'.format(timeline), 1)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def more(self):
-        for timeline in TIMELINES:
-            page = getattr(self, '_{}_page') + 1
-            if page > getattr(self, '_{}_pages'):
-                #
-                # DO SOMETHING
-                #
-                continue
-            data = loads(urlopen(EXPLORE.format(timeline, page, PER_PAGE)).read().decode('utf-8'))
-            setattr(self, '_{}_coubs'.format(timeline), data['total_pages'])
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def user_liked(self, user):

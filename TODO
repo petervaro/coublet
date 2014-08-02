@@ -4,9 +4,9 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.109 (20140801)                       ##
+##                       Version: 0.5.61.186 (20140802)                       ##
 ##                                                                            ##
-##                 File: /Users/petervaro/Documents/coub/TODO                 ##
+##                                 File: TODO                                 ##
 ##                                                                            ##
 ##           Designed and written by Peter Varo. Copyright (c) 2014           ##
 ##             License agreement is provided in the LICENSE file              ##
@@ -19,30 +19,68 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 3 POSTS IN 2 FILES -----------------------------#
+#----------------------------- 8 POSTS IN 4 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: ui.py
+  - file: com.py
     line: 41
+    note: |
+          handle connection errors, like:
+          urllib.error.HTTPError: HTTP Error 403: Forbidden
+          was it forbidden because the coub is private?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: com.py
+    line: 45
+    note: |
+          probably add some timeout, and try to reconnect or something..
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 3
+  - file: api.py
+    line: 125
+    note: |
+          if current is greater than total?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
+  - file: main.py
+    line: 42
+    note: |
+          read version from file (where will VERSION file be in the final app?)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 5
+  - file: main.py
+    line: 102
+    note: |
+          _load_stream(index) is a private method
+          or that should be part of the public interface?
+          and what about the user stream? search?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 6
+  - file: ui.py
+    line: 47
     note: |
           likes, external link
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
+  # 7
   - file: ui.py
-    line: 95
+    line: 113
     note: |
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
-  - file: main.py
-    line: 74
+  # 8
+  - file: ui.py
+    line: 272
     note: |
-          _load_stream(index) is a private method
-          or that should be part of the public interface?
+          check if there is an on-going update
 
 
 
@@ -50,16 +88,16 @@ TODO:
 QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: ui.py
-    line: 154
+  - file: main.py
+    line: 190
     note: |
-          setParent() or close() ???
+          cwd or '.' ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
-  - file: main.py
-    line: 124
+  - file: ui.py
+    line: 176
     note: |
-          cwd or '.' ???
+          setParent() or close() ???
 
 

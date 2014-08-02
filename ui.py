@@ -4,9 +4,9 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.50.090 (20140801)                       ##
+##                       Version: 0.5.61.186 (20140802)                       ##
 ##                                                                            ##
-##                File: /Users/petervaro/Documents/coub/ui.py                 ##
+##                                File: ui.py                                 ##
 ##                                                                            ##
 ##           Designed and written by Peter Varo. Copyright (c) 2014           ##
 ##             License agreement is provided in the LICENSE file              ##
@@ -21,9 +21,11 @@
 
 # Import Python modules
 import os
+import queue
 
 # Import PyQt5 modules
-from PyQt5.QtCore import QDir, Qt, QUrl, pyqtSignal
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QDir, Qt, QUrl, QTimer, pyqtSignal
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
@@ -35,8 +37,12 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
 class CoubPostUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, parent=None, file=None):
+    def __init__(self, parent=None, packet=None):
         super(CoubPostUI, self).__init__(parent)
+
+        # Get proper dimensions
+        width = 320
+        height = int(width * packet['ratio'])
 
         # TODO: likes, external link
 
@@ -45,16 +51,22 @@ class CoubPostUI(QWidget):
         self._mute = False
         self._loop = False
 
+        # Preview
+        thumb = QPixmap(packet['thumb'][1])
+
+        self.image = image = QLabel(self)
+        image.setPixmap(thumb.scaled(width, height))
+
         # Media player
         self.player = player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         # Video Area
-        video = QVideoWidget()
+        self.video = video = QVideoWidget(self)
 
         # Set area, and event handlers of media player
         player.setVideoOutput(video)
         player.stateChanged.connect(self.on_state_changed)
         player.error.connect(self.on_error)
-        player.setMedia(QMediaContent(QUrl.fromLocalFile(file)))
+        player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
 
         # Set error label
         self.error_label = error_label = QLabel()
@@ -62,15 +74,21 @@ class CoubPostUI(QWidget):
 
         # Build layout
         layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(video)
+        layout.addWidget(image)
         layout.addWidget(error_label)
         self.setLayout(layout)
+
+        video.hide()
+        error_label.hide()
 
         # Just for the sake of under-scored names ;)
         self.mousePressEvent = self.on_mouse_pressed
 
         # Set size and load content
-        self.setFixedSize(320, 240)
+        self.setFixedSize(width, height)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -95,6 +113,7 @@ class CoubPostUI(QWidget):
         # TODO: make error label appear on the video itself
         #       test: CoubPost(parent, None) --> error loading media
         self._post = False
+        self.error_label.show()
         self.error_label.setText('ERROR: ' + self.player.errorString())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -125,6 +144,8 @@ class CoubPostUI(QWidget):
         else:
             # Start playing the loop
             self._loop = True
+            self.image.hide()
+            self.video.show()
             self.player.play()
 
 
@@ -137,15 +158,16 @@ class CoubStreamUI(QWidget):
         super(CoubStreamUI, self).__init__(parent)
 
         # Set layout
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.layout = layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def add_posts(self, *posts):
-        print(posts)
+    def add_posts(self, *packets):
         # Add new posts to stream
-        for post in posts:
-            self.layout.addWidget(CoubPostUI(self, post))
+        for packet in packets:
+            self.layout.addWidget(CoubPostUI(self, packet))
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def clear(self):
@@ -160,26 +182,35 @@ class CoubStreamUI(QWidget):
 class CoubAppUI(QWidget):
 
     TITLE = 'COUB'
-    MENU = 'featured', 'newest', 'random', 'user'
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, root, x, y, width, height):
+    def __init__(self, root, x, y, width, height, menu_labels):
         super(CoubAppUI, self).__init__(None)
         self.root = root
+        self.menu_labels = menu_labels
 
         self.setWindowTitle(self.TITLE)
 
         self.layout = layout = QVBoxLayout()
         self.menu = menu = QHBoxLayout()
         self.posts = posts = QScrollArea()
+        posts.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        posts.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
 
         # Finalise layout
+        menu.setSpacing(0)
+        menu.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(posts)
         layout.addLayout(menu)
         self.setLayout(layout)
 
-        self.streams = streams =[]
-        for i, menu_item in enumerate(self.MENU):
+        self.streams = streams = []
+        self._packets = packets = []
+        for i, menu_item in enumerate(self.menu_labels):
             # Add menu item
             menu_button = QPushButton(menu_item)
             # b is needed because of the implementation `void triggered(bool = 0)`
@@ -188,7 +219,8 @@ class CoubAppUI(QWidget):
             # Add stream
             stream = CoubStreamUI(self)
             streams.append(stream)
-            # stream.hide()
+            # Add stream specific packet queue
+            packets.append(queue.Queue())
 
         # Set last stream selected
         self.stream = stream
@@ -202,9 +234,20 @@ class CoubAppUI(QWidget):
             x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
         # Set window position and dimension
         self.setGeometry(x, y, width, height)
+        self.setMaximumWidth(width)
 
         # Load first stream
         self.on_menu_button_pressed(0)
+        # Start checking if Queue has items
+        self.on_load_posts(0)
+
+    # Scrolling related stuffs:
+    #
+    # self.posts.verticalScrollBar().value()      # getter
+    # self.posts.verticalScrollBar().setValue()   # setter
+    #
+    # Consider using QListWidget instead of QScrollArea
+    # more info: http://qt-project.org/doc/qt-4.8/qlistwidget.html
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_exit(self, event):
@@ -213,13 +256,35 @@ class CoubAppUI(QWidget):
         event.accept()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_load_posts(self, index):
+        try:
+            # Load as many posts as possible
+            while True:
+                self.stream.add_posts(self._packets[index].get_nowait())
+        except queue.Empty:
+            pass
+        finally:
+            # Start loading posts again later
+            QTimer.singleShot(500, lambda i=index: self.on_load_posts(index))
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _on_update_stream(self, value):
+        # TODO: check if there is an on-going update
+        if value and value == self.posts.verticalScrollBar().maximum():
+            print('[SCROLL] {} / {}'.format(value, self.posts.verticalScrollBar().maximum()))
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_menu_button_pressed(self, index):
-        # Hide previous stream
-        # self.stream.hide()
-        self.stream = stream = self.streams[index]
-        # stream.show()
+        # Set selected stream
+        self.stream = self.streams[index]
+        # Remove previously selected stream
         posts = self.posts
         posts.takeWidget()
-        posts.setWidget(stream)
+        # Indicate change in window title
+        self.setWindowTitle('{} | {}'.format(self.TITLE,
+                                             self.menu_labels[index].upper()))
+        # And set new stream
+        posts.setWidget(self.stream)
         posts.setWidgetResizable(True)
-        stream.add_posts(*self.root.load_menu(index))
+        # Load data
+        self.root.load_menu(index, self._packets[index])
