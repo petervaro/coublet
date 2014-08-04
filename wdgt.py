@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.274 (20140802)                       ##
+##                       Version: 0.5.61.447 (20140804)                       ##
 ##                                                                            ##
 ##                               File: wdgt.py                                ##
 ##                                                                            ##
@@ -19,9 +19,15 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-from PyQt5.QtGui import QMovie
+from PyQt5.QtGui import QMovie, QPixmap, QPalette
 from PyQt5.QtCore import Qt, QTimer, QByteArray
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
+
+ICON_AND_LABEL = 0
+LABEL_AND_ICON = 1
+
+VERTICAL   = 0
+HORIZONTAL = 1
 
 f = lambda: None
 
@@ -56,10 +62,13 @@ class MouseClick:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def click(self, button):
+        # Clicked by left mouse button
         if button == Qt.LeftButton:
             self._counters[0] += 1
             if not self.l_timer.isActive():
                 self.l_timer.start()
+
+        # Clicked by right mouse button
         if button == Qt.RightButton:
             self._counters[1] += 1
             if not self.r_timer.isActive():
@@ -68,15 +77,55 @@ class MouseClick:
 
 
 #------------------------------------------------------------------------------#
-class AnimatedGif(QLabel):
+class IconLabel(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, file='', parent=None):
+    # TODO: do something with width and height if provided
+    def __init__(self, file, label, order, orientation, font=None, color=None,
+                 width=0, height=0, padding_x=0, padding_y=0, parent=None):
         super().__init__(parent)
 
-        self._movie = movie = QMovie(file, QByteArray(), self)
-        self.setMovie(movie)
+        layout = QHBoxLayout() if orientation else QVBoxLayout()
+        layout.setContentsMargins(*(padding_x, padding_y)*2)
 
+        icon = QLabel()
+        text = QLabel(label)
+        if font:
+            text.setFont(font)
+        if color:
+            p = QPalette()
+            p.setColor(p.Foreground, color)
+            text.setPalette(p)
+
+        icon.setPixmap(QPixmap(file))
+
+        for item in (icon, text, icon)[order:order+2]:
+            layout.addWidget(item, alignment=Qt.AlignHCenter)
+
+        self.setLayout(layout)
+
+
+#------------------------------------------------------------------------------#
+class AnimatedGif(QWidget):
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def __init__(self, file, width, height, padding_x=0, padding_y=0, parent=None):
+        super().__init__(parent)
+
+        self.setFixedSize(width + 2*padding_x, height + 2*padding_y)
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(*(padding_x, padding_y)*2)
+
+        label = QLabel()
+        label.setFixedSize(width, height)
+
+        movie = QMovie(file, QByteArray(), self)
         movie.setCacheMode(QMovie.CacheAll)
         movie.setSpeed(100)
         movie.start()
+
+        label.setMovie(movie)
+        layout.addWidget(label)
+
+        self.setLayout(layout)

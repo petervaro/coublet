@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.291 (20140803)                       ##
+##                       Version: 0.5.61.378 (20140803)                       ##
 ##                                                                            ##
 ##                                File: api.py                                ##
 ##                                                                            ##
@@ -79,14 +79,34 @@ def _create_packet(source):
     # Link to audio
     packet['audio'] = source.get('audio_file_url', None)
     # Number of likes
-    packet['likes'] = source.get('likes_count', 0)
+    packet['likes'] = str(source.get('likes_count', 0))
     # Number of recoubs
-    packet['share'] = source.get('recoubs_count', 0)
+    packet['share'] = str(source.get('recoubs_count', 0))
     # Title of masterpiece ;)
     packet['title'] = source.get('title', '')
-    # Creator of coub
-    packet['user'] = source.get('user_id', None)
-    # ID
+
+    # Avatar of creator of coub
+    try:
+        user = source['user']['small_avatar']
+    except KeyError:
+        user = None
+    packet['user'] = [user]
+
+    # Name of creator of coub
+    try:
+        name = source['user']['name']
+    except KeyError:
+        name = '—'
+    packet['name'] = name
+
+    # ID of user
+    try:
+        user_id = source['user']['id']
+    except KeyError:
+        user_id = 0
+    packet['user_id'] = str(user_id)
+
+    # ID of coub
     packet['id'] = str(source.get('id', 0))
 
     # Return new packet
@@ -98,13 +118,13 @@ def _create_packet(source):
 class CoubAPI:
 
     URL = 'http://coub.com/api/v1/timeline/{}.json?page={}&per_page={}'
-    PER_PAGE = 5
     STREAMS = ('explore',
                'explore/newest',
                'explore/random')
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self):
+    def __init__(self, per_page):
+        self.per_page = per_page
         # counter => [total_pages, current_page]
         self.counters = [[1, 1] for i in self.STREAMS]
 
@@ -120,7 +140,7 @@ class CoubAPI:
         total, current = self.counters[index]
         if current <= total:
             # Format URL and start downloading JSON file
-            url = self.URL.format(self.STREAMS[index], current, self.PER_PAGE)
+            url = self.URL.format(self.STREAMS[index], current, self.per_page)
             com.DownloadJson(url, queue).start()
         # TODO: if current is greater than total?
 

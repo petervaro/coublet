@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.231 (20140802)                       ##
+##                       Version: 0.5.61.455 (20140804)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -31,12 +31,14 @@ import urllib.request
 
 # Import PyQt5 modules
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QApplication
 
 # Import coub modules
 import ui
 import api
 import com
+import static
 
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
@@ -49,7 +51,10 @@ class CoubApp:
     FILE = 'cache'
     PATH = '.coub_cache'
     MENU = 'featured', 'newest', 'random', 'user'
+    DATA = 'video', 'thumb', 'user'
+    PAGE = 5  # per-page count
 
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, version):
         self._version = version
         # Create global cache folder and file
@@ -57,13 +62,13 @@ class CoubApp:
         self._file = os.path.join(self._path, self.FILE)
         os.makedirs(self._path, exist_ok=True)
 
-        # Create cache folder for videos
-        self._path_video = path_video = os.path.join(self._path, 'video')
-        os.makedirs(path_video, exist_ok=True)
-
-        # Create cache folder for thumbnails
-        self._path_thumb = path_thumb = os.path.join(self._path, 'thumb')
-        os.makedirs(path_thumb, exist_ok=True)
+        # Create folders for downloaded
+        # cache data if it doesn`t exist
+        self._data = data = []
+        for location in self.DATA:
+            folder = os.path.join(self._path, location)
+            data.append(folder)
+            os.makedirs(folder, exist_ok=True)
 
         # If load previously saved data
         try:
@@ -75,27 +80,28 @@ class CoubApp:
                     raise FileNotFoundError
         # If first run of app or update
         except (FileNotFoundError, EOFError):
-            # Delete all previous videos
-            for file in os.listdir(path_video):
-                path = os.path.join(path_video, file)
-                if os.path.isfile(path):
-                    os.remove(path)
-            # Delete all previous thumbnails
-            for file in os.listdir(path_thumb):
-                path = os.path.join(path_thumb, file)
-                if os.path.isfile(path):
-                    os.remove(path)
+            # Delete all previous DATA
+            for folder in self._data:
+                for path in os.listdir(folder):
+                    file = os.path.join(path, file)
+                    if os.path.isfile(file):
+                        os.remove(file)
             self._temp = {'temporary': set()}
 
         # Queue for JSON file communication
         self._json = [queue.Queue() for m in self.MENU]
 
         # Create API object
-        self.source = api.CoubAPI()
+        self.source = api.CoubAPI(per_page=self.PAGE)
 
         # Run base Qt Application
         self.qt_app = QApplication(sys.argv)
-        self.qt_app.setApplicationName('COUB')
+        self.qt_app.setApplicationName('COUBLET')
+
+        # Load fonts
+        fonts = QFontDatabase()
+        for weight in static.FONTS:
+            fonts.addApplicationFont('font/TTF/SourceSansPro-{}.ttf'.format(weight))
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def load_menu(self, index, packets_queue):
@@ -110,22 +116,27 @@ class CoubApp:
         try:
             packets = self.source._load_stream(self._json[index].get_nowait(), index)
             files = set()
-            path_video = self._path_video
-            path_thumb = self._path_thumb
+            path_video, path_thumb, path_user = self._data
             for packet in packets:
                 # Create file names
                 id = packet['id']
                 video_file = os.path.join(path_video, id + '.mp4')
                 thumb_file = os.path.join(path_thumb, id + '.jpg')
+                if packet['user'][0]:
+                    user_file = os.path.join(path_user, packet['user_id'] + '.jpg')
+                    files.add(user_file)
+                else:
+                    user_file = static.RESOURCES['no_avatar']
                 # Store file names in temporary cache
                 files.add(video_file)
                 files.add(thumb_file)
                 # Add file names to packet
                 packet['video'].append(video_file)
                 packet['thumb'].append(thumb_file)
+                packet['user'].append(user_file)
                 # If file not cached download it
                 if not os.path.isfile(video_file):
-                    com.DownloadPacket(packet, packets_queue).start()
+                    com.DownloadPacket(packet, packets_queue, self.DATA).start()
                 # If cached, pushed it to queue
                 else:
                     packets_queue.put(packet)
@@ -160,9 +171,9 @@ class CoubApp:
     def run(self):
         # Get previous position and dimension
         x, y = self._temp.setdefault('startup_pos', (NotImplemented, 0))
-        width, height = self._temp.setdefault('startup_dim', (340, 768))
+        width, height = self._temp.setdefault('startup_dim', (350, 768))
         # Create CoubApp
-        app = ui.CoubAppUI(self, x, y, width, height, self.MENU)
+        app = ui.CoubAppUI(self, x, y, width, height, self.MENU, self.PAGE)
         app.show()
         return self.qt_app.exec_()
 

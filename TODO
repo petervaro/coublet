@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.294 (20140803)                       ##
+##                       Version: 0.5.61.455 (20140804)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -19,12 +19,12 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 8 POSTS IN 4 FILES -----------------------------#
+#---------------------------- 11 POSTS IN 6 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: com.py
-    line: 41
+    line: 42
     note: |
           handle connection errors, like:
           urllib.error.HTTPError: HTTP Error 403: Forbidden
@@ -33,55 +33,86 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
   - file: com.py
-    line: 45
+    line: 46
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 3
+  - file: api.py
+    line: 145
+    note: |
+          if current is greater than total?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
+  - file: static.py
+    line: 30
+    note: |
+          Add SVG support to icons
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 5
+  - file: static.py
+    line: 40
+    note: |
+          after the design is settled, remove unnecessary font files
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 6
+  - file: wdgt.py
+    line: 83
+    note: |
+          do something with width and height if provided
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 7
   - file: main.py
-    line: 42
+    line: 44
     note: |
           read version from file (where will VERSION file be in the final app?)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
+  # 8
   - file: main.py
-    line: 102
+    line: 108
     note: |
           _load_stream(index) is a private method
           or that should be part of the public interface?
           and what about the user stream? search?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
-  - file: api.py
-    line: 125
+  # 9
+  - file: ui.py
+    line: 41
     note: |
-          if current is greater than total?
+          Create a global variable here called CONSTANTS,
+          fill it with Q* objects during the initialisation of
+          CoubAppUI, and add all constant objects, like the 'recoub'
+          icon or the fonts.
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
+  # 10
   - file: ui.py
-    line: 50
-    note: |
-          likes, external link
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 7
-  - file: ui.py
-    line: 158
+    line: 237
     note: |
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
+  # 11
   - file: ui.py
-    line: 356
+    line: 518
     note: |
-          check if there is an on-going update
-          main.py::CoubApp should provide PER_PAGES -> CoubAPI and to this
+          REFRESH DATA
+          SOLVE THE NEWEST, RANDOM NOT LOADING PROBLEM
+          ADD USER STREAM
+          ON REFRESH SCROLL TO LAST POST
+          SOLVE DOWNLOAD/PLACING ORDER PROBLEM
+          PRETTIFY GUI
+          REFACTOR CODE AND REPO
+          
+          Harry Potter < 7:21:00
 
 
 
@@ -90,7 +121,7 @@ QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: ui.py
-    line: 260
+    line: 371
     note: |
           setParent() or close() ???
 

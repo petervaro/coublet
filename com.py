@@ -4,7 +4,7 @@
 ##                                  ========                                  ##
 ##                                                                            ##
 ##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.170 (20140802)                       ##
+##                       Version: 0.5.61.370 (20140803)                       ##
 ##                                                                            ##
 ##                                File: com.py                                ##
 ##                                                                            ##
@@ -28,8 +28,9 @@ import urllib.request
 class DownloadPacket(threading.Thread):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, packet, queue):
+    def __init__(self, packet, queue, data):
         super().__init__(self, daemon=True)
+        self._data = data
         self._queue = queue
         self._packet = packet
 
@@ -37,13 +38,14 @@ class DownloadPacket(threading.Thread):
     def run(self):
         packet = self._packet
         # Download from URL to file
-        for file in ('video', 'thumb'):
+        for file in self._data:
             # TODO: handle connection errors, like:
             #       urllib.error.HTTPError: HTTP Error 403: Forbidden
             #       was it forbidden because the coub is private?
             print('[{}] started:  {!r} => {!r}'.format(file.upper(), *packet[file]))
             # TODO: probably add some timeout, and try to reconnect or something..
-            urllib.request.urlretrieve(*packet[file])
+            if all(packet[file]):
+                urllib.request.urlretrieve(*packet[file])
             print('[{}] finished: {!r} => {!r}'.format(file.upper(), *packet[file]))
         # Put packet into queue
         self._queue.put(packet)
