@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.455 (20140804)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.61.568 (20140805)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -48,6 +48,7 @@ DEV = True
 #------------------------------------------------------------------------------#
 class CoubApp:
 
+    NAME = 'COUBLET'
     FILE = 'cache'
     PATH = '.coub_cache'
     MENU = 'featured', 'newest', 'random', 'user'
@@ -96,7 +97,7 @@ class CoubApp:
 
         # Run base Qt Application
         self.qt_app = QApplication(sys.argv)
-        self.qt_app.setApplicationName('COUBLET')
+        self.qt_app.setApplicationName(self.NAME)
 
         # Load fonts
         fonts = QFontDatabase()
@@ -173,7 +174,7 @@ class CoubApp:
         x, y = self._temp.setdefault('startup_pos', (NotImplemented, 0))
         width, height = self._temp.setdefault('startup_dim', (350, 768))
         # Create CoubApp
-        app = ui.CoubAppUI(self, x, y, width, height, self.MENU, self.PAGE)
+        app = ui.CoubAppUI(self, x, y, width, height, self.NAME, self.MENU, self.PAGE)
         app.show()
         return self.qt_app.exec_()
 

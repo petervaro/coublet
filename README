@@ -1,3 +1,7 @@
 Cross-platform desktop application for following posts from COUB
 Designed and written by Peter Varo. Copyright (c) 2014
 License agreement is provided in the LICENSE file
+
+- - -
+ui.py  -- how the user interface works
+gui.py -- how the user interface looks

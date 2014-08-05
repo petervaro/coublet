@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.455 (20140804)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.61.568 (20140805)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -19,7 +19,28 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#---------------------------- 11 POSTS IN 6 FILES -----------------------------#
+#----------------------------- 2 POSTS IN 1 FILES -----------------------------#
+FIXME:
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 1
+  - file: gui.py
+    line: 70
+    note: |
+          the mask produced by this function
+          does not have antialiased edges
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: gui.py
+    line: 271
+    note: |
+          DropShadow has a "funny" effect on the post,
+          because of that the full info-bar scrolls away
+          after the video started playing
+
+
+
+#---------------------------- 15 POSTS IN 7 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
@@ -61,58 +82,88 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 6
   - file: wdgt.py
-    line: 83
+    line: 82
     note: |
           do something with width and height if provided
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 7
+  - file: gui.py
+    line: 183
+    note: |
+          wrap title and author
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 8
   - file: main.py
     line: 44
     note: |
           read version from file (where will VERSION file be in the final app?)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
+  # 9
   - file: main.py
-    line: 108
+    line: 109
     note: |
           _load_stream(index) is a private method
           or that should be part of the public interface?
           and what about the user stream? search?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
-  - file: ui.py
-    line: 41
-    note: |
-          Create a global variable here called CONSTANTS,
-          fill it with Q* objects during the initialisation of
-          CoubAppUI, and add all constant objects, like the 'recoub'
-          icon or the fonts.
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 10
   - file: ui.py
-    line: 237
+    line: 42
+    note: |
+          REFRESH DATA
+          SOLVE THE NEWEST, RANDOM NOT LOADING PROBLEM
+            ^
+          ADD USER STREAM
+          ON REFRESH, SCROLL TO LAST POST
+          SOLVE DOWNLOAD/PLACING ORDER PROBLEM
+          PRETTIFY GUI
+          REFACTOR CODE AND REPO
+          
+          Harry Potter < 3:02:00
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 11
+  - file: ui.py
+    line: 54
+    note: |
+          legacy remove this!
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 12
+  - file: ui.py
+    line: 100
+    note: |
+          place error label to the right position
+          for testing see on_error's note
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 13
+  - file: ui.py
+    line: 161
     note: |
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
+  # 14
   - file: ui.py
-    line: 518
+    line: 209
     note: |
-          REFRESH DATA
-          SOLVE THE NEWEST, RANDOM NOT LOADING PROBLEM
-          ADD USER STREAM
-          ON REFRESH SCROLL TO LAST POST
-          SOLVE DOWNLOAD/PLACING ORDER PROBLEM
-          PRETTIFY GUI
-          REFACTOR CODE AND REPO
-          
-          Harry Potter < 7:21:00
+          delete widget and its content
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 15
+  - file: ui.py
+    line: 358
+    note: |
+          implerment real up and "over scroll" by
+          overwriting wheelEvent
+          self.wheelEvent = self.on_mouse_scroll
+          and with event.pixelDelta() -> check QWheelEvent
 
 
 
@@ -121,7 +172,7 @@ QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: ui.py
-    line: 371
+    line: 256
     note: |
           setParent() or close() ???
 

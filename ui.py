@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.455 (20140804)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.61.568 (20140805)                       ##
 ##                                                                            ##
 ##                                File: ui.py                                 ##
 ##                                                                            ##
@@ -31,51 +31,64 @@ from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
                              QPushButton, QSizePolicy, QSlider, QStyle, QFrame,
-                             QVBoxLayout, QWidget, QDesktopWidget, QScrollArea)
+                             QVBoxLayout, QWidget, QDesktopWidget, QScrollArea,
+                             QGraphicsDropShadowEffect)
 
 # Import coub modules
+import gui
 import wdgt
 from static import RESOURCES
 
+# TODO: REFRESH DATA
+#       SOLVE THE NEWEST, RANDOM NOT LOADING PROBLEM
+#         ^
+#       ADD USER STREAM
+#       ON REFRESH, SCROLL TO LAST POST
+#       SOLVE DOWNLOAD/PLACING ORDER PROBLEM
+#       PRETTIFY GUI
+#       REFACTOR CODE AND REPO
+#
+#       Harry Potter < 3:02:00
 
-# TODO: Create a global variable here called CONSTANTS,
-#       fill it with Q* objects during the initialisation of
-#       CoubAppUI, and add all constant objects, like the 'recoub'
-#       icon or the fonts.
-
-PADDING = 5
+#------------------------------------------------------------------------------#
+# TODO: legacy remove this!
+PADDING = gui.SMALL_PADDING
 
 #------------------------------------------------------------------------------#
 class CoubPostUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, fonts, packet=None, parent=None):
+    def __init__(self, packet=None, parent=None):
         super().__init__(parent)
 
-        # Get proper dimensions
+        # Get and set dimension of content (coub)
         width = 320
-        height = int(width * packet['ratio'])
+        height = int(width*packet['ratio'])
 
-        # Flags
+        # Set flags
         self._post = True
         self._mute = False
         self._audio_loop = False
         self._video_loop = False
 
-        # Store perma-link
+        # Store static values
         self._link = packet['perma']
 
-        # Preview
-        thumb = QPixmap(packet['thumb'][1])
+        # Create thumbnail preview
+        self.thumb = thumb = QLabel(self)
+        thumb.setPixmap(QPixmap(packet['thumb'][1]).scaled(width, height))
 
-        self.image = image = QLabel(self)
-        image.setPixmap(thumb.scaled(width, height))
-
-        # Media players
-        self.video_player = video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        # Video Area
+        # Create video player and its content
         self.video = video = QVideoWidget(self)
         video.setFixedSize(width, height)
+
+        self.video_player = video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        video_player.setVideoOutput(video)
+        video_player.stateChanged.connect(self.on_video_state_changed)
+        video_player.error.connect(self.on_error)
+        video_player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
+
+        # Create audio player and its content
         audio = packet['audio']
         if audio:
             self.audio_player = audio_player = QMediaPlayer(None)
@@ -83,100 +96,16 @@ class CoubPostUI(QWidget):
             audio_player.error.connect(self.on_error)
             audio_player.setMedia(QMediaContent(QUrl(audio)))
 
-        # Set area, and event handlers of media video_player
-        video_player.setVideoOutput(video)
-        video_player.stateChanged.connect(self.on_video_state_changed)
-        video_player.error.connect(self.on_error)
-        video_player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
-
         # Set error label
-        self.error_label = error_label = QLabel()
-        error_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        # TODO: place error label to the right position
+        #       for testing see on_error's note
+        self.error = error = QLabel()
+        error.setFont(gui.CONSTANTS['text_font_generic'])
 
-        # Build layout
-        main_layout = QHBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.addSpacing(PADDING)
+        # Build GUI (style)
+        gui.build_post_style(self, packet, video, thumb, width, height)
 
-        sub_layout = QVBoxLayout()
-        sub_layout.setSpacing(0)
-        sub_layout.setContentsMargins(0, 0, 0, 0)
-        sub_layout.addSpacing(PADDING)
-        sub_layout.addWidget(video)
-        sub_layout.addWidget(image)
-
-        sub_layout.addSpacing(PADDING)
-        height += PADDING
-
-        # Icons
-        avatar = QLabel()
-        avatar.setPixmap(QPixmap(packet['user'][1]))
-        likes_icon = QLabel()
-        likes_icon.setPixmap(QPixmap(RESOURCES['like']))
-        share_icon = QLabel()
-        share_icon.setPixmap(QPixmap(RESOURCES['recoub']))
-
-        info = QHBoxLayout()
-        info.addWidget(avatar)
-        height += 38
-
-        info.addSpacing(PADDING)
-
-        text_color = QPalette()
-        text_color.setColor(QPalette.Foreground, QColor(0, 0, 0, 153))  # 60% alpha
-
-        info_text = QVBoxLayout()
-
-        coub_text = QLabel('“{}”'.format(packet['title']))
-        coub_text.setFont(fonts['title'])
-        coub_text.setPalette(text_color)
-        info_text.addWidget(coub_text)
-
-        user_name = QLabel('— {}'.format(packet['name']))
-        user_name.setFont(fonts['user_name'])
-        user_name.setPalette(text_color)
-        info_text.addWidget(user_name)
-
-        info.addLayout(info_text)
-
-        info.addStretch(0)
-
-        social = QVBoxLayout()
-
-        likes = QHBoxLayout()
-        likes.addWidget(likes_icon)
-        likes.addSpacing(PADDING)
-        likes_text = QLabel(packet['likes'])
-        likes_text.setFont(fonts['numbers'])
-        likes_text.setPalette(text_color)
-        likes.addWidget(likes_text, alignment=Qt.AlignRight)
-        social.addLayout(likes)
-
-        share = QHBoxLayout()
-        share.addWidget(share_icon)
-        share.addSpacing(PADDING)
-        share_text = QLabel(packet['share'])
-        share_text.setFont(fonts['numbers'])
-        share_text.setPalette(text_color)
-        share.addWidget(share_text, alignment=Qt.AlignRight)
-        social.addLayout(share)
-
-        info.addLayout(social)
-        sub_layout.addLayout(info)
-
-        sub_layout.addWidget(error_label)
-        sub_layout.addSpacing(PADDING)
-        height += PADDING
-
-        main_layout.addLayout(sub_layout)
-        main_layout.addSpacing(PADDING)
-        self.setLayout(main_layout)
-
-        video.hide()
-        error_label.hide()
-
-        # Just for the sake of under-scored names ;)
+        # Overload event (just for the sake of under-scored names:)
         self.mouseReleaseEvent = self.on_mouse_release
 
         # Set mouse events
@@ -185,18 +114,13 @@ class CoubPostUI(QWidget):
                                         l_single=self.play,
                                         l_double=self.open,
                                         r_single=self.mute)
-
-        # Set size and load content
-        self.setFixedSize(width + 2*PADDING, height + 2*PADDING)
-
-        # Set color
-        background = QPalette()
-        background.setColor(QPalette.Background, QColor(*(0xB8,)*3))
-        self.setAutoFillBackground(True)
-        self.setPalette(background)
+        # Hide unneeded widgets
+        video.hide()
+        error.hide()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_mouse_release(self, event):
+        # Handle mouse event
         self._clicker.click(event.button())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -237,8 +161,8 @@ class CoubPostUI(QWidget):
         # TODO: make error label appear on the video itself
         #       test: CoubPost(parent, None) --> error loading media
         self._post = False
-        self.error_label.show()
-        self.error_label.setText('ERROR: ' + self.video_player.errorString())
+        self.error.show()
+        self.error.setText('ERROR: ' + self.video_player.errorString().upper())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def mute(self):
@@ -282,7 +206,8 @@ class CoubPostUI(QWidget):
             # Start playing the loop
             self._audio_loop = True
             self._video_loop = True
-            self.image.hide()
+            # TODO: delete widget and its content
+            self.thumb.hide()
             self.video.show()
             self.video_player.play()
             try:
@@ -296,64 +221,24 @@ class CoubPostUI(QWidget):
 class CoubStreamUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, index, fonts, parent=None):
+    def __init__(self, index, parent=None):
         super().__init__(parent)
 
+        # Store static values
         self.index = index
-
-        # Set layout
-        self.layout = layout = QVBoxLayout()
-
-        pad = 10
-        self.spinner = wdgt.AnimatedGif(file=RESOURCES['spinner'],
-                                        width=20,
-                                        height=20,
-                                        padding_x=pad,
-                                        padding_y=pad)
+        # Build UI
+        gui.build_stream_style(self)
+        # Initially hide spinner
         self.spinner.hide()
-
-        layout.setSpacing(0)
-        layout.setContentsMargins(pad, 0, 0, 0)
-
-        self.scroll_label_u = wdgt.IconLabel(file=RESOURCES['scroll_up'],
-                                             label='SCROLL UP TO REFRESH',
-                                             font=fonts['ui_generic'],
-                                             order=wdgt.LABEL_AND_ICON,
-                                             orientation=wdgt.VERTICAL,
-                                             width=10,
-                                             height=10,
-                                             padding_x=pad,
-                                             padding_y=pad)
-        layout.addWidget(self.scroll_label_u)
-
-        layout.addStretch(0)
-
-        self.scroll_label_d = wdgt.IconLabel(file=RESOURCES['scroll_down'],
-                                             label='SCROLL DOWN TO LOAD MORE',
-                                             font=fonts['ui_generic'],
-                                             order=wdgt.ICON_AND_LABEL,
-                                             orientation=wdgt.VERTICAL,
-                                             width=10,
-                                             height=10,
-                                             padding_x=pad,
-                                             padding_y=pad)
-        layout.addWidget(self.scroll_label_d)
-
-
-        self.setLayout(layout)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def add_posts(self, fonts, *packets):
-        # Add new posts to stream
+    def add_post(self, packet):
         layout = self.layout
         self.spinner.hide()
-        for packet in packets:
-            # Insert before space
-            post_index = layout.count() - 2
-            layout.insertWidget(post_index,
-                                CoubPostUI(fonts, packet),
-                                alignment=Qt.AlignTop)
-            layout.insertSpacing(post_index, 10)
+        # Insert before space
+        post_index = layout.count() - 2
+        layout.insertWidget(post_index, CoubPostUI(packet), alignment=Qt.AlignTop)
+        layout.insertSpacing(post_index, gui.POST_SPACING)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def spin(self, reload=False):
@@ -376,27 +261,26 @@ class CoubStreamUI(QWidget):
 #------------------------------------------------------------------------------#
 class CoubAppUI(QWidget):
 
-    TITLE = 'COUBLET'
-
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, root, x, y, width, height, menu_labels, packet_count):
+    def __init__(self, root, x, y, width, height, title, menu_labels, packet_count):
         super().__init__(None)
+
+        # Set CONSTANTS
+        gui.set_gui_constants(self)
+
+        # Store static values
         self.root = root
         self.menu_labels = menu_labels
-
-        palette = QPalette()
-        palette.setColor(QPalette.Background, QColor(*(0x38,)*3))
-        self.setPalette(palette)
-
+        # Maximum packet count before load data
+        # a stream can load more packets
         self.packet_count = packet_count
+        self.title = title
 
-        sans = 'Source Sans Pro'
-        self.fonts = {'title'     : QFont(sans, 16, QFont.Bold),
-                      'user_name' : QFont(sans, 10, QFont.Normal, italic=True),
-                      'numbers'   : QFont(sans, 12, QFont.Normal),
-                      'ui_generic': QFont(sans, 10, QFont.Normal)}
 
-        self.setWindowTitle(self.TITLE)
+        self.setWindowTitle(title)
+
+        gui.build_app_style(self)
+
 
         self.layout = layout = QVBoxLayout()
         self.menu = menu = QHBoxLayout()
@@ -406,63 +290,75 @@ class CoubAppUI(QWidget):
         posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
         posts.setFrameShape(QFrame.NoFrame)
 
-        # Finalise layout
         menu.setSpacing(0)
         menu.setContentsMargins(0, 0, 0, 0)
+
+        menu_bar = QWidget()
+
+        menu_pad = QVBoxLayout()
+        menu_pad.setSpacing(0)
+        menu_pad.setContentsMargins(0, 0, 0, 0)
+
+        menu_pad.addSpacing(2*PADDING)
+        menu_pad.addLayout(menu)
+        menu_pad.addSpacing(2*PADDING)
+
+        menu_color = QPalette()
+        menu_color.setColor(QPalette.Background, QColor(*(0x18,)*3))
+        menu_bar.setPalette(menu_color)
+        menu_bar.setAutoFillBackground(True)
+
+
+        menu_bar.setLayout(menu_pad)
+
+        # Finalise layout
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(posts)
-        layout.addSpacing(PADDING)
-        layout.addLayout(menu)
-        layout.addSpacing(PADDING)
+        layout.addWidget(menu_bar)
         self.setLayout(layout)
 
         self.streams = streams = []
         self._packets = packets = []
         self._packet_counter = packet_counter = []
 
-        color = QPalette()
-        color.setColor(QPalette.Foreground, QColor(0xFF, 0xFF, 0xFF, 0x9C))
-        font = self.fonts['ui_generic']
-
-        menu.addSpacing(PADDING)
+        menu.addSpacing(2*PADDING)
         for i, menu_item in enumerate(self.menu_labels):
+            # If not the first item, add
+            # auto-stretching before it
             if i:
                 menu.addStretch(0)
+
             # Add menu item
-            p = QPixmap('img/{}.png'.format(menu_item))
-            menu_icon = QLabel()
-            menu_icon.setPixmap(p)
-            # menu_button = wdgt.IconLabel(file='img/{}.png'.format(menu_item),
-            #                              label=menu_item.upper(),
-            #                              order=wdgt.ICON_AND_LABEL,
-            #                              orientation=wdgt.HORIZONTAL,
-            #                              font=self.fonts['ui_generic'],
-            #                              color=QColor(0xFF, 0xFF, 0xFF, 0x9C),
-            #                              padding_x=PADDING,
-            #                              padding_y=PADDING)
-            menu_text = QLabel(menu_item.upper())
-            menu_text.setFont(font)
-            menu_text.setPalette(color)
-            # b is needed because of the implementation `void triggered(bool = 0)`
-            # menu_button.clicked.connect(lambda b, n=i: self.on_menu_button_pressed(n))
-            menu.addWidget(menu_icon)
-            menu.addSpacing(PADDING)
-            menu.addWidget(menu_text)
+            click = wdgt.MouseClick(l_single=lambda n=i: self.on_menu_button_pressed(n))
+            menu_button = wdgt.IconLabel(icon=gui.CONSTANTS['icon_' + menu_item],
+                                         label=menu_item.upper(),
+                                         order=wdgt.ICON_AND_LABEL,
+                                         orientation=wdgt.HORIZONTAL,
+                                         font=gui.CONSTANTS['text_font_generic'],
+                                         palette=gui.CONSTANTS['text_color_light'],
+                                         spacing=PADDING,
+                                         mouse_event_handler=click)
+            menu.addWidget(menu_button)
+
             # Add stream
-            stream = CoubStreamUI(i, self.fonts)
+            stream = CoubStreamUI(i)
             streams.append(stream)
             # Add stream specific packet queue
             packets.append(queue.Queue())
             packet_counter.append(0)
 
-        menu.addSpacing(PADDING)
+        menu.addSpacing(2*PADDING)
 
         # Set last stream selected
         self.stream = stream
 
         # Just for the sake of under-scored names ;)
         self.closeEvent = self.on_exit
+        # TODO: implerment real up and "over scroll" by
+        #       overwriting wheelEvent
+        #       self.wheelEvent = self.on_mouse_scroll
+        #       and with event.pixelDelta() -> check QWheelEvent
 
         # If position have not been set before
         if x is NotImplemented:
@@ -494,7 +390,7 @@ class CoubAppUI(QWidget):
         try:
             # Load as many posts as possible
             while True:
-                self.stream.add_posts(self.fonts, self._packets[index].get_nowait())
+                self.stream.add_post(self._packets[index].get_nowait())
                 self._packet_counter[index] -= 1
         except queue.Empty:
             pass
@@ -513,18 +409,6 @@ class CoubAppUI(QWidget):
     def reload(self, index):
         # Refresh posts
         self.stream.spin(reload=True)
-
-
-        #   TODO: REFRESH DATA
-        #         SOLVE THE NEWEST, RANDOM NOT LOADING PROBLEM
-        #         ADD USER STREAM
-        #         ON REFRESH SCROLL TO LAST POST
-        #         SOLVE DOWNLOAD/PLACING ORDER PROBLEM
-        #         PRETTIFY GUI
-        #         REFACTOR CODE AND REPO
-        #
-        #         Harry Potter < 7:21:00
-
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _on_update_stream(self, value):
@@ -548,7 +432,7 @@ class CoubAppUI(QWidget):
         posts = self.posts
         posts.takeWidget()
         # Indicate change in window title
-        self.setWindowTitle('{} | {}'.format(self.TITLE,
+        self.setWindowTitle('{} | {}'.format(self.title,
                                              self.menu_labels[index].upper()))
         # And set new stream
         posts.setWidget(self.stream)

@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.447 (20140804)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.61.564 (20140805)                       ##
 ##                                                                            ##
 ##                               File: wdgt.py                                ##
 ##                                                                            ##
@@ -29,7 +29,7 @@ LABEL_AND_ICON = 1
 VERTICAL   = 0
 HORIZONTAL = 1
 
-f = lambda: None
+f = lambda *args, **kwargs: None
 
 #------------------------------------------------------------------------------#
 class MouseClick:
@@ -75,34 +75,50 @@ class MouseClick:
                 self.r_timer.start()
 
 
-
 #------------------------------------------------------------------------------#
 class IconLabel(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     # TODO: do something with width and height if provided
-    def __init__(self, file, label, order, orientation, font=None, color=None,
-                 width=0, height=0, padding_x=0, padding_y=0, parent=None):
+    def __init__(self, icon, label, order, orientation, font=None, palette=None,
+                 width=0, height=0, padding_x=0, padding_y=0, spacing=0,
+                 parent=None, mouse_event_handler=None):
         super().__init__(parent)
 
+        # Create layout
         layout = QHBoxLayout() if orientation else QVBoxLayout()
+        layout.setSpacing(0)
         layout.setContentsMargins(*(padding_x, padding_y)*2)
 
-        icon = QLabel()
+        # Set icon
+        image = QLabel()
+        image.setPixmap(icon)
+
+        # Set label
         text = QLabel(label)
         if font:
             text.setFont(font)
-        if color:
-            p = QPalette()
-            p.setColor(p.Foreground, color)
-            text.setPalette(p)
+        if palette:
+            text.setPalette(palette)
 
-        icon.setPixmap(QPixmap(file))
-
-        for item in (icon, text, icon)[order:order+2]:
+        # Place items in order
+        for i, item in enumerate((image, text, image)[order:order+2]):
+            if i:
+                layout.addSpacing(spacing)
             layout.addWidget(item, alignment=Qt.AlignHCenter)
 
+        # Set layout
         self.setLayout(layout)
+
+        # Set mouse event if any
+        if mouse_event_handler:
+            self._event_handler = mouse_event_handler
+            self.mouseReleaseEvent = self.on_mouse_release
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_mouse_release(self, event):
+        self._event_handler.click(event.button())
+
 
 
 #------------------------------------------------------------------------------#
