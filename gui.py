@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.61.568 (20140805)                       ##
+##                       Version: 0.5.70.668 (20140806)                       ##
 ##                                                                            ##
 ##                                File: gui.py                                ##
 ##                                                                            ##
@@ -20,24 +20,23 @@
 ######################################################################## INFO ##
 
 # Import python modules
+from copy import copy
 from os.path import join as os_path_join
 
 # Import PyQt5 modules
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPalette, QColor, QFont, QRegion
-from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel,
-                             QGraphicsDropShadowEffect)
+from PyQt5.QtGui import (QPixmap, QPalette, QColor, QFont, QRegion,
+                         QTransform, QFontDatabase)
 
 # Import coub modules
 import wdgt
-from static import RESOURCES
 
 #------------------------------------------------------------------------------#
 # Module level constants
 SMALL_PADDING = 5
 LARGE_PADDING = 2*SMALL_PADDING
 
-ICON_SIZE = 16
+ICON_SIZE = 13
+USER_SIZE = 38
 
 POST_SPACING = 15
 
@@ -54,7 +53,14 @@ _SANS = 'Source Sans Pro'
 CONSTANTS = {}
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-_image = lambda file: QPixmap(os_path_join('img', file))
+
+def _image(file, rotate=None):
+    pixmap = QPixmap(os_path_join('img', file))
+    if rotate is None:
+        return pixmap
+    transform = QTransform()
+    transform.rotate(rotate)
+    return pixmap.transformed(transform)
 
 def _color(parent, place, string, alpha=100):
     alpha = '{:X}'.format(round(2.55 * alpha))
@@ -104,11 +110,21 @@ def _rounded_rectangle(widget, tl, tr, br, bl):
 #------------------------------------------------------------------------------#
 # Create and set GUI constants
 def set_gui_constants(parent):
+    # TODO: after the design is settled, remove unnecessary font files
+    weights = {'ExtraLight', 'Light', 'Semibold', 'Bold', 'Black'}
+    weights ^= set(s + 'It' for s in copy(weights))
+    weights ^= {'Regular', 'It'}
+    # Load fonts
+    fonts = QFontDatabase()
+    for weight in weights:
+        fonts.addApplicationFont('font/TTF/SourceSansPro-{}.ttf'.format(weight))
+
     # Palettes
-    CONSTANTS['text_color_dark']   = _color(parent, FOREGROUND, '000000', 45)
-    CONSTANTS['text_color_light']  = _color(parent, FOREGROUND, 'ffffff', 60)
-    CONSTANTS['panel_color_light'] = _color(parent, BACKGROUND, 'cccccc')
-    CONSTANTS['panel_color_dark']  = _color(parent, BACKGROUND, '383838')
+    CONSTANTS['text_color_dark']    = _color(parent, FOREGROUND, '000000', 45)
+    CONSTANTS['text_color_light']   = _color(parent, FOREGROUND, 'ffffff', 45)
+    CONSTANTS['panel_color_light']  = _color(parent, BACKGROUND, '808080')
+    CONSTANTS['panel_color_dark']   = _color(parent, BACKGROUND, '282828')
+    CONSTANTS['panel_color_darker'] = _color(parent, BACKGROUND, '181818')
 
     # Colors
     # CONSTANTS['shadow_color'] = QColor(0x00, 0x00, 0x00, _alpha(70))
@@ -121,208 +137,17 @@ def set_gui_constants(parent):
 
     # Icons
     CONSTANTS['icon_no_avatar']   = _image('no_avatar.png')
-    CONSTANTS['icon_scroll_up']   = _image('scroll_up.png')
-    CONSTANTS['icon_scroll_down'] = _image('scroll_down.png')
-    CONSTANTS['icon_recoub']      = _image('recoub.png')
-    CONSTANTS['icon_like']        = _image('like.png')
-    CONSTANTS['icon_featured']    = _image('featured.png')
-    CONSTANTS['icon_newest']      = _image('newest.png')
-    CONSTANTS['icon_random']      = _image('random.png')
-    CONSTANTS['icon_user']        = _image('user.png')
+    CONSTANTS['icon_scroll_up']   = _image('icons_scroll.png')
+    CONSTANTS['icon_scroll_down'] = _image('icons_scroll.png', rotate=180)
+    CONSTANTS['icon_recoub']      = _image('icons_share.png')
+    CONSTANTS['icon_like']        = _image('icons_like.png')
+    CONSTANTS['icon_featured']    = _image('icons_featured.png')
+    CONSTANTS['icon_newest']      = _image('icons_newest.png')
+    CONSTANTS['icon_random']      = _image('icons_random.png')
+    CONSTANTS['icon_hot']         = _image('icons_hot.png')
+
+    # Other images
+    CONSTANTS['other_separator'] = _image('separator.png')
 
     # Animation
-    # CONSTANTS['anim_spinner']     = _image('spinner.gif')
-
-
-
-#------------------------------------------------------------------------------#
-def build_post_style(widget, packet, video, thumb, width, height):
-    # Create layout object for full post and zero-out
-    main_layout = QVBoxLayout()
-    main_layout.setSpacing(0)
-    main_layout.setContentsMargins(*(0,)*4)
-
-    # Create layout for content
-    content_layout = QHBoxLayout()
-    content_layout.setSpacing(0)
-    content_layout.setContentsMargins(*(0,)*4)
-
-    # Add video and thumb to content
-    content_layout.addSpacing(SMALL_PADDING)
-    content_layout.addWidget(video)
-    content_layout.addWidget(thumb)
-    content_layout.addSpacing(SMALL_PADDING)
-
-    # Add layout to main layout
-    main_layout.addSpacing(SMALL_PADDING)
-    height += SMALL_PADDING
-    main_layout.addLayout(content_layout)
-
-    # Add padding, increase total height
-    main_layout.addSpacing(SMALL_PADDING)
-    height += SMALL_PADDING
-
-    # Create layout object for info bar and zero-out
-    info_layout = QHBoxLayout()
-    info_layout.setSpacing(0)
-    info_layout.setContentsMargins(*(0,)*4)
-
-    # Create and add avatar
-    avatar = QLabel()
-    avatar_image = QPixmap(packet['user'][1])
-    avatar.setPixmap(avatar_image)
-    info_layout.addSpacing(SMALL_PADDING)
-    info_layout.addWidget(avatar)
-
-    # Create layout for text and zero-out
-    text_layout = QVBoxLayout()
-    text_layout.setSpacing(0)
-    text_layout.setContentsMargins(*(0,)*4)
-
-    # Create and add title
-    # TODO: wrap title and author
-    title = QLabel('“{}”'.format(packet['title']))
-    title.setFont(CONSTANTS['text_font_title'])
-    title.setPalette(CONSTANTS['text_color_dark'])
-    text_layout.addWidget(title)
-
-    # Create and add author
-    author = QLabel('— {}'.format(packet['name']))
-    author.setFont(CONSTANTS['text_font_author'])
-    author.setPalette(CONSTANTS['text_color_dark'])
-    text_layout.addWidget(author)
-
-    # Add texts to the info bar
-    info_layout.addSpacing(SMALL_PADDING)
-    info_layout.addLayout(text_layout)
-
-    # Create layout for social and zero-out
-    social_layout = QVBoxLayout()
-    social_layout.setSpacing(0)
-    social_layout.setContentsMargins(*(0,)*4)
-
-    # Create layout for like-counter and zero-out
-    likes_layout = QHBoxLayout()
-    likes_layout.setSpacing(0)
-    likes_layout.setContentsMargins(*(0,)*4)
-
-    # Create and add likes
-    likes_icon = QLabel()
-    likes_icon.setPixmap(CONSTANTS['icon_like'])
-
-    likes_text = QLabel(packet['likes'])
-    likes_text.setFont(CONSTANTS['text_font_numbers'])
-    likes_text.setPalette(CONSTANTS['text_color_dark'])
-
-    likes_layout.addSpacing(SMALL_PADDING)
-    likes_layout.addWidget(likes_icon)
-    likes_layout.addSpacing(SMALL_PADDING)
-    likes_layout.addWidget(likes_text, alignment=Qt.AlignRight)
-
-    # Create layout for share-counter and zero-out
-    share_layout = QHBoxLayout()
-    share_layout.setSpacing(0)
-    share_layout.setContentsMargins(*(0,)*4)
-
-    # Create and add shares
-    share_icon = QLabel()
-    share_icon.setPixmap(CONSTANTS['icon_recoub'])
-
-    share_text = QLabel(packet['share'])
-    share_text.setFont(CONSTANTS['text_font_numbers'])
-    share_text.setPalette(CONSTANTS['text_color_dark'])
-
-    share_layout.addSpacing(SMALL_PADDING)
-    share_layout.addWidget(share_icon)
-    share_layout.addSpacing(SMALL_PADDING)
-    share_layout.addWidget(share_text, alignment=Qt.AlignRight)
-
-    # Add likes and share to social
-    social_layout.addLayout(likes_layout)
-    social_layout.addLayout(share_layout)
-
-    # Add social to the info bar
-    info_layout.addStretch(0)
-    info_layout.addLayout(social_layout)
-    info_layout.addSpacing(SMALL_PADDING)
-
-    # Add info, increase total height
-    main_layout.addLayout(info_layout)
-    height += avatar_image.height()
-
-    # Add bottom padding
-    main_layout.addSpacing(SMALL_PADDING)
-    height += SMALL_PADDING
-
-    # Set layout for this widget
-    widget.setLayout(main_layout)
-
-    # Set color of this widget
-    widget.setAutoFillBackground(True)
-    widget.setPalette(CONSTANTS['panel_color_light'])
-
-
-    # Set size and load content
-    widget.setFixedSize(width + 2*SMALL_PADDING, height)
-
-    # Make it rounded
-    _rounded_rectangle(widget, *(SMALL_PADDING,)*4)
-
-    # FIXME: DropShadow has a "funny" effect on the post,
-    #        because of that the full info-bar scrolls away
-    #        after the video started playing
-
-    # # Add drop shadow to this widget
-    # shadow = QGraphicsDropShadowEffect(widget)
-    # shadow.setColor(CONSTANTS['shadow_color'])
-    # shadow.setBlurRadius(15)
-    # shadow.setOffset(0, 3)
-    # widget.setGraphicsEffect(shadow)
-
-
-
-#------------------------------------------------------------------------------#
-def build_stream_style(widget):
-    # Create layout
-    widget.layout = layout = QVBoxLayout()
-    layout.setSpacing(0)
-    layout.setContentsMargins(LARGE_PADDING, 0, 0, 0)
-
-    # Add animated spinner
-    widget.spinner = wdgt.AnimatedGif(file=RESOURCES['spinner'],
-                                      width=20,
-                                      height=20,
-                                      padding_x=LARGE_PADDING,
-                                      padding_y=LARGE_PADDING)
-    # Add scroll-up icon and text
-    layout.addWidget(wdgt.IconLabel(icon=CONSTANTS['icon_scroll_up'],
-                                    label='SCROLL UP TO REFRESH',
-                                    font=CONSTANTS['text_font_generic'],
-                                    palette=CONSTANTS['text_color_light'],
-                                    order=wdgt.LABEL_AND_ICON,
-                                    orientation=wdgt.VERTICAL,
-                                    width=10,
-                                    height=10,
-                                    padding_x=LARGE_PADDING,
-                                    padding_y=LARGE_PADDING))
-    # Add scroll-down icon and text
-    layout.addStretch(0)
-    layout.addWidget(wdgt.IconLabel(icon=CONSTANTS['icon_scroll_down'],
-                                    label='SCROLL DOWN TO LOAD MORE',
-                                    font=CONSTANTS['text_font_generic'],
-                                    palette=CONSTANTS['text_color_light'],
-                                    order=wdgt.ICON_AND_LABEL,
-                                    orientation=wdgt.VERTICAL,
-                                    width=10,
-                                    height=10,
-                                    padding_x=LARGE_PADDING,
-                                    padding_y=LARGE_PADDING))
-    # Set layout
-    widget.setLayout(layout)
-
-
-
-#------------------------------------------------------------------------------#
-def build_app_style(widget):
-
-    widget.setPalette(CONSTANTS['panel_color_dark'])
+    CONSTANTS['anim_spinner']     = os_path_join('img', 'spinner.gif')

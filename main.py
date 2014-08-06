@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.61.568 (20140805)                       ##
+##                       Version: 0.5.70.675 (20140806)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -35,148 +35,182 @@ from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QApplication
 
 # Import coub modules
-import ui
 import api
 import com
-import static
+from ui.app import CoubAppUI
 
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
-VERSION = 0, 5, 61
+VERSION = 0, 5, 70
 DEV = True
 
 #------------------------------------------------------------------------------#
 class CoubApp:
 
     NAME = 'COUBLET'
-    FILE = 'cache'
-    PATH = '.coub_cache'
-    MENU = 'featured', 'newest', 'random', 'user'
-    DATA = 'video', 'thumb', 'user'
+    MENU = 'featured', 'newest', 'random', 'hot'
     PAGE = 5  # per-page count
+
+    CACHE_FILE = 'cache'
+    CACHE_PATH = '.coub_cache'
+    CACHE_DATA = 'video', 'thumb', 'user'
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, version):
+        # Store static values
         self._version = version
-        # Create global cache folder and file
-        self._path = os.path.join(os.path.expanduser('~'), self.PATH)
-        self._file = os.path.join(self._path, self.FILE)
-        os.makedirs(self._path, exist_ok=True)
+
+        # Create path string of global cache folder and cache file
+        self._cache_path = os.path.join(os.path.expanduser('~'), self.CACHE_PATH)
+        self._cache_file = os.path.join(self._cache_path, self.CACHE_FILE)
+        os.makedirs(self._cache_path, exist_ok=True)
 
         # Create folders for downloaded
         # cache data if it doesn`t exist
-        self._data = data = []
-        for location in self.DATA:
-            folder = os.path.join(self._path, location)
-            data.append(folder)
-            os.makedirs(folder, exist_ok=True)
+        self._cache_folders = cache_folders = []
+        for folder_name in self.CACHE_DATA:
+            folder_path = os.path.join(self._cache_path, folder_name)
+            cache_folders.append(folder_path)
+            os.makedirs(folder_path, exist_ok=True)
 
-        # If load previously saved data
+        # Default values
+        dimension = NotImplemented, 0, 350, 768
+
+        # Load previously saved data if exists
         try:
-            with open(self._file, 'rb') as cache:
-                self._temp = pickle.load(cache)
+            with open(self._cache_file, 'rb') as cache:
+                # Deserialise cache data
+                self._cache = pickle.load(cache)
                 # If cache file's version is not the same
-                # as the app create the empty cache object
-                if self._temp['version'] < self._version:
+                # as the app create new cache object and
+                # store the version independent data
+                if self._cache['version'] < self._version:
+                    dimension = self._cache['dimension']
+                    # Remove cached files
                     raise FileNotFoundError
-        # If first run of app or update
+        # If first run of app or app has been updated
         except (FileNotFoundError, EOFError):
-            # Delete all previous DATA
-            for folder in self._data:
+            # Delete all previously cached files
+            for folder in self._cache_folders:
                 for path in os.listdir(folder):
-                    file = os.path.join(path, file)
+                    file = os.path.join(folder, path)
                     if os.path.isfile(file):
                         os.remove(file)
-            self._temp = {'temporary': set()}
+            # Create new cache file and set default data
+            self._cache = {'temporary': set(),
+                           'dimension': dimension}
 
         # Queue for JSON file communication
-        self._json = [queue.Queue() for m in self.MENU]
+        self._json_queues = [queue.Queue() for menu_label in self.MENU]
 
-        # Create API object
-        self.source = api.CoubAPI(per_page=self.PAGE)
+        # Create the Coub API object
+        self._coub_api = api.CoubAPI(per_page=self.PAGE)
 
         # Run base Qt Application
-        self.qt_app = QApplication(sys.argv)
-        self.qt_app.setApplicationName(self.NAME)
+        self._qt_app = QApplication(sys.argv)
+        self._qt_app.setApplicationName(self.NAME)
 
-        # Load fonts
-        fonts = QFontDatabase()
-        for weight in static.FONTS:
-            fonts.addApplicationFont('font/TTF/SourceSansPro-{}.ttf'.format(weight))
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def load_menu(self, index, packets_queue):
-        # TODO: _load_stream(index) is a private method
-        #       or that should be part of the public interface?
-        #       and what about the user stream? search?
-        self.source._open_stream(index, self._json[index])
-        self.process_menu(index, packets_queue)
+    def on_exit(self, dimension):
+        # Get local reference
+        cache = self._cache
+
+        # Store info
+        cache['dimension'] = dimension
+        cache['version'] = self._version
+
+        # Clean up
+        cache.setdefault('latest', set())
+        for file in cache['latest'] - cache['temporary']:
+            try:
+                os.remove(file)
+            # The program was terminated before all files were downloaded,
+            # but the file name is already in the temporary list
+            except FileNotFoundError:
+                pass
+
+        # Update values
+        cache['latest'] = cache['temporary']
+        cache['temporary'] = set()
+
+        # Serialise new data
+        with open(self._cache_file, 'wb') as cache_file:
+            pickle.dump(cache, cache_file, pickle.HIGHEST_PROTOCOL)
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def process_menu(self, index, packets_queue):
+    def run(self):
+        # Create CoubApp
+        app = CoubAppUI(self, self._cache['dimension'], self.NAME, self.MENU, self.PAGE)
+        app.show()
+        # Enter event-loop
+        return self._qt_app.exec_()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def start_loading_posts(self, index, packets_queue):
+        # If there is more data to fetch
         try:
-            packets = self.source._load_stream(self._json[index].get_nowait(), index)
+            self._coub_api.fetch_data_to_queue(index, self._json_queues[index])
+            self._process_fetched_data(index, packets_queue)
+        # If no more data
+        except api.NoMoreDataToFetch:
+            # TODO: indicate this to the user somehow
+            pass
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _process_fetched_data(self, index, packets_queue):
+        # If data fetched to queue
+        try:
+            # Translate fetched data into a coublet-packet
+            fetched = self._json_queues[index].get_nowait()
+            packets = self._coub_api.translate_fetched_data(fetched, index)
+
+            # Process each coublet-packet
             files = set()
-            path_video, path_thumb, path_user = self._data
-            for packet in packets:
-                # Create file names
+            path_video, path_thumb, path_user = self._cache_folders
+            for i, packet in enumerate(packets):
+                # Get unique coub ID
                 id = packet['id']
+
+                # Create and store video file name
                 video_file = os.path.join(path_video, id + '.mp4')
+                files.add(video_file)
+
+                # Create and store thumbnail file name
                 thumb_file = os.path.join(path_thumb, id + '.jpg')
-                if packet['user'][0]:
-                    user_file = os.path.join(path_user, packet['user_id'] + '.jpg')
+                files.add(thumb_file)
+
+                # Create and store avatar file name
+                avatar_url = packet['user'][0]
+                if avatar_url:
+                    ext = os.path.splitext(avatar_url)[1]
+                    user_file = os.path.join(path_user, packet['user_id'] + ext)
                     files.add(user_file)
                 else:
-                    user_file = static.RESOURCES['no_avatar']
-                # Store file names in temporary cache
-                files.add(video_file)
-                files.add(thumb_file)
+                    user_file = None
+
                 # Add file names to packet
                 packet['video'].append(video_file)
                 packet['thumb'].append(thumb_file)
                 packet['user'].append(user_file)
-                # If file not cached download it
+
+                # If video file not already cached then
+                # download it and push it to the queue
                 if not os.path.isfile(video_file):
-                    com.DownloadPacket(packet, packets_queue, self.DATA).start()
+                    com.DownloadPacket(i, packet, packets_queue, self.CACHE_DATA).start()
                 # If cached, pushed it to queue
                 else:
-                    packets_queue.put(packet)
-            self._temp['temporary'].update(files)
+                    packets_queue.put((i, packet))
+            # Store files
+            self._cache['temporary'].update(files)
+        # If data didn't arrived yet
         except queue.Empty:
-            pass
-        finally:
-            QTimer.singleShot(300, lambda i=index, q=packets_queue: self.process_menu(i, q))
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_exit(self, position, dimension):
-        temp = self._temp
-        # Store info
-        temp['startup_pos'] = position
-        temp['startup_dim'] = dimension
-        temp['version'] = self._version
-
-        # Clean up
-        temp.setdefault('latest', set())
-        for file in temp['latest'] - temp['temporary']:
-            os.remove(file)
-
-        # Update values
-        temp['latest'] = temp['temporary']
-        temp['temporary'] = set()
-
-        # Update cache file
-        with open(self._file, 'wb') as cache:
-            pickle.dump(temp, cache, pickle.HIGHEST_PROTOCOL)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def run(self):
-        # Get previous position and dimension
-        x, y = self._temp.setdefault('startup_pos', (NotImplemented, 0))
-        width, height = self._temp.setdefault('startup_dim', (350, 768))
-        # Create CoubApp
-        app = ui.CoubAppUI(self, x, y, width, height, self.NAME, self.MENU, self.PAGE)
-        app.show()
-        return self.qt_app.exec_()
+            # Schedule next processing
+            QTimer.singleShot(300, lambda i=index, q=packets_queue:
+                                       self._process_fetched_data(i, q))
 
 
 
@@ -198,4 +232,6 @@ if __name__ == '__main__':
         # Update header comments
         header('.', exceptions=exceptions)
     # Run application
+    # TODO: catch all exceptions, store it to a log file, write that into
+    #       the cache file and ask the user if he wants to send it to us
     sys.exit(CoubApp(v).run())

@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.370 (20140803)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.70.675 (20140806)                       ##
 ##                                                                            ##
 ##                                File: com.py                                ##
 ##                                                                            ##
@@ -28,9 +28,10 @@ import urllib.request
 class DownloadPacket(threading.Thread):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, packet, queue, data):
+    def __init__(self, index, packet, queue, data):
         super().__init__(self, daemon=True)
         self._data = data
+        self._index = index
         self._queue = queue
         self._packet = packet
 
@@ -48,7 +49,9 @@ class DownloadPacket(threading.Thread):
                 urllib.request.urlretrieve(*packet[file])
             print('[{}] finished: {!r} => {!r}'.format(file.upper(), *packet[file]))
         # Put packet into queue
-        self._queue.put(packet)
+        self._queue.put((self._index, packet))
+
+
 
 #------------------------------------------------------------------------------#
 class DownloadJson(threading.Thread):

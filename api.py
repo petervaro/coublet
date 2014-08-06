@@ -1,10 +1,10 @@
 ## INFO ########################################################################
 ##                                                                            ##
-##                                  COUB App                                  ##
-##                                  ========                                  ##
+##                                  COUBLET                                   ##
+##                                  =======                                   ##
 ##                                                                            ##
-##      Cross-platform desktop application for following posts from COUB      ##
-##                       Version: 0.5.61.378 (20140803)                       ##
+##          Cross-platform desktop client to follow posts from COUB           ##
+##                       Version: 0.5.70.660 (20140806)                       ##
 ##                                                                            ##
 ##                                File: api.py                                ##
 ##                                                                            ##
@@ -106,6 +106,13 @@ def _create_packet(source):
         user_id = 0
     packet['user_id'] = str(user_id)
 
+    # Perma-link to user
+    try:
+        user_perma = source['user']['permalink']
+    except KeyError:
+        user_perma = None
+    packet['user_perma'] = user_perma
+
     # ID of coub
     packet['id'] = str(source.get('id', 0))
 
@@ -115,44 +122,45 @@ def _create_packet(source):
 
 
 #------------------------------------------------------------------------------#
-class CoubAPI:
+class NoMoreDataToFetch(Exception): pass
 
-    URL = 'http://coub.com/api/v1/timeline/{}.json?page={}&per_page={}'
-    STREAMS = ('explore',
-               'explore/newest',
-               'explore/random')
+
+#------------------------------------------------------------------------------#
+class CoubAPI:
+    URL = 'http://coub.com/api/v1/timeline/{}?page={}&per_page={}'
+    STREAMS = ['explore.json',
+               'explore/newest.json',
+               'explore/random.json',
+               'hot.json']
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, per_page):
         self.per_page = per_page
         # counter => [total_pages, current_page]
         self.counters = [[1, 1] for i in self.STREAMS]
+        self.user_counter = [1, 1]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _load_stream(self, data, index):
+    def fetch_data_to_queue(self, index, queue):
+        self._fetch_data_to_queue(self.counters[index], self.STREAMS[index], queue)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def fetch_user_data_to_queue(self, user, queue):
+        self._fetch_data_to_queue(self.user_counter, 'user/' + user, queue)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def translate_fetched_data(self, data, index):
         self.counters[index][0] = data.get('total_pages', 0)
         self.counters[index][1] += 1
         return [_create_packet(d) for d in data.get('coubs', ())]
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _open_stream(self, index, queue):
+    def _fetch_data_to_queue(self, counter, url, queue):
         # If given stream has more pages to load
-        total, current = self.counters[index]
+        total, current = counter
         if current <= total:
             # Format URL and start downloading JSON file
-            url = self.URL.format(self.STREAMS[index], current, self.per_page)
+            url = self.URL.format(url, current, self.per_page)
             com.DownloadJson(url, queue).start()
-        # TODO: if current is greater than total?
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def explore(self): return self._load_stream(0)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def random(self): return self._load_stream(1)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def newest(self): return self._load_stream(2)
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def user_liked(self, user):
-        pass
+        else:
+            raise NoMoreDataToFetch
