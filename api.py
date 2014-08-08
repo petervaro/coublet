@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.660 (20140806)                       ##
+##                       Version: 0.5.70.707 (20140806)                       ##
 ##                                                                            ##
 ##                                File: api.py                                ##
 ##                                                                            ##
@@ -134,7 +134,9 @@ class CoubAPI:
                'hot.json']
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, per_page):
+    def __init__(self, per_page, app_name, app_version):
+        # STore static values
+        self.app_data = app_name, app_version
         self.per_page = per_page
         # counter => [total_pages, current_page]
         self.counters = [[1, 1] for i in self.STREAMS]
@@ -146,7 +148,7 @@ class CoubAPI:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def fetch_user_data_to_queue(self, user, queue):
-        self._fetch_data_to_queue(self.user_counter, 'user/' + user, queue)
+        self._fetch_data_to_queue(self.user_counter, 'user/' + user)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def translate_fetched_data(self, data, index):
@@ -161,6 +163,6 @@ class CoubAPI:
         if current <= total:
             # Format URL and start downloading JSON file
             url = self.URL.format(url, current, self.per_page)
-            com.DownloadJson(url, queue).start()
+            com.DownloadJson(url, queue, *self.app_data).start()
         else:
             raise NoMoreDataToFetch

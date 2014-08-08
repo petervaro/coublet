@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.675 (20140806)                       ##
+##                       Version: 0.5.70.736 (20140807)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -25,7 +25,6 @@ import sys
 import queue
 import shutil
 import pickle
-import os.path
 import itertools
 import urllib.request
 
@@ -42,7 +41,7 @@ from ui.app import CoubAppUI
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
 VERSION = 0, 5, 70
-DEV = True
+DEV = 1
 
 #------------------------------------------------------------------------------#
 class CoubApp:
@@ -104,7 +103,9 @@ class CoubApp:
         self._json_queues = [queue.Queue() for menu_label in self.MENU]
 
         # Create the Coub API object
-        self._coub_api = api.CoubAPI(per_page=self.PAGE)
+        self._coub_api = api.CoubAPI(per_page=self.PAGE,
+                                     app_name=self.NAME,
+                                     app_version=version)
 
         # Run base Qt Application
         self._qt_app = QApplication(sys.argv)
@@ -200,7 +201,8 @@ class CoubApp:
                 # If video file not already cached then
                 # download it and push it to the queue
                 if not os.path.isfile(video_file):
-                    com.DownloadPacket(i, packet, packets_queue, self.CACHE_DATA).start()
+                    com.DownloadPacket(i, packet, packets_queue, self.CACHE_DATA,
+                                       self.NAME, self._version).start()
                 # If cached, pushed it to queue
                 else:
                     packets_queue.put((i, packet))
@@ -235,3 +237,7 @@ if __name__ == '__main__':
     # TODO: catch all exceptions, store it to a log file, write that into
     #       the cache file and ask the user if he wants to send it to us
     sys.exit(CoubApp(v).run())
+
+    # Print all module dependencies
+    # CoubApp(v).run()
+    # print(*['{}: {}'.format(k, v) for k, v in sys.modules.items()], sep='\n')

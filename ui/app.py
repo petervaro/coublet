@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.675 (20140806)                       ##
+##                       Version: 0.5.70.799 (20140808)                       ##
 ##                                                                            ##
 ##                              File: ui/app.py                               ##
 ##                                                                            ##
@@ -23,26 +23,27 @@
 import queue
 
 # Import PyQt5 modules
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QElapsedTimer
 from PyQt5.QtWidgets import (QWidget, QFrame, QScrollArea, QDesktopWidget,
                              QHBoxLayout, QVBoxLayout)
 
 # Import coublet modules
 import gui
 import wdgt
-from ui.stream import CoubStreamUI
+from .stream import CoubStreamUI
 
 # TODO: REFRESH DATA
 #       ON REFRESH, SCROLL TO LAST POST
-#       SOLVE DOWNLOAD/PLACING ORDER PROBLEM
-#       OPTIMISE: IF VIDEO NOT PLAYING AND NOT VISIBLE, KILL AUDIO AND VIDEO
 #       PRETTIFY GUI
 #       REFACTOR CODE AND REPO
 #
-#       Harry Potter < 3:11:00
+#       Harry Potter @ 0:33:50
 
 #------------------------------------------------------------------------------#
 class CoubAppUI(QWidget):
+
+    SCROLL_POSITIVE = 30
+    SCROLL_NEGATIVE = -SCROLL_POSITIVE
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, root, dimension, title, menu_labels, max_packets):
@@ -60,6 +61,8 @@ class CoubAppUI(QWidget):
         self._title = title
         self.setWindowTitle(title)
 
+        self._bounce = 0
+
         # Storages
         self._streams = []
         self._packets = []
@@ -68,15 +71,10 @@ class CoubAppUI(QWidget):
         # Build GUI
         self._build_gui()
 
-        # Overload closing event, and rename it just
+        # Overload closing and scrolling event, and rename it just
         # for the sake of under-scored names ;)
         self.closeEvent = self.on_exit
-
-        # TODO: implerment real up and "over scroll" by
-        #       overwriting wheelEvent
-        #       self.wheelEvent = self.on_mouse_scroll
-        #       and with event.pixelDelta() -> check QWheelEvent
-        #       probably: step1: show arrows, step2: action!
+        self.wheelEvent = self.on_mouse_scroll
 
         # Unpack dimension data
         x, y, width, height = dimension
@@ -89,13 +87,37 @@ class CoubAppUI(QWidget):
         self.setGeometry(x, y, width, height)
         self.setMaximumWidth(width)
 
+        self._xxx = True
+
         # Load first stream
         self.on_menu_button_pressed(0)
 
-    # Scrolling related stuffs:
-    #
-    # self._posts.verticalScrollBar().value()      # getter
-    # self._posts.verticalScrollBar().setValue()   # setter
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_mouse_scroll(self, event):
+        # TODO: on stream start (first visit) jumpt at the end of
+        #       scroll_up arrow, probably using one these?
+        #       self._posts.verticalScrollBar().value()      # getter
+        #       self._posts.verticalScrollBar().setValue()   # setter
+
+        # Get index of currently active stream
+        # TODO: consider: we don't need active stream, we need active index!
+        index = self._active_stream.index
+        # If there is no on-going downloading
+        if not self._loading[index]:
+            # Get the "stregth" of scroll
+            dy = event.pixelDelta().y()
+            # If "hard" enoough downward
+            if dy < self.SCROLL_NEGATIVE:
+                self._load_more_posts(index)
+                print('[SCROLL] loading more...')
+            # If "hard" enough upward
+            elif dy > self.SCROLL_POSITIVE:
+                self._reload_posts(index)
+                print('[SCROLL] refreshing...')
+
+        # Kill posts in stream which are not visible
+        self._active_stream.reset_unseen_posts()
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_exit(self, event):
@@ -112,7 +134,7 @@ class CoubAppUI(QWidget):
         try:
             # Load as many posts as possible
             while True:
-                self._streams[index].add_post(self._packets[index].get_nowait())
+                self._streams[index].load_post(self._packets[index].get_nowait())
                 self._loading[index] -= 1
                 # If fetched all data, stop scheduling
                 if not self._loading[index]:
@@ -121,21 +143,6 @@ class CoubAppUI(QWidget):
         except queue.Empty:
             # Start loading posts again later
             QTimer.singleShot(500, lambda i=index: self.on_load_posts(index))
-
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _on_update_stream(self, value):
-        index = self._active_stream.index
-        # If there is no on-going downloading
-        if not self._loading[index]:
-            # If load more posts
-            if value == self._posts.verticalScrollBar().maximum():
-                self._load_more_posts(index)
-                print('[SCROLL] loading more...')
-            # If reload posts
-            elif not value:
-                self._reload_posts(index)
-                print('[SCROLL] refreshing...')
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -167,14 +174,12 @@ class CoubAppUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _load_more_posts(self, index):
-        # Indicate stream is fetching data
-        self._active_stream.spin()
         # Start loading posts
         self._root.start_loading_posts(index, self._packets[index])
         # Set loading counter
         self._loading[index] = self._max_packets
         # Create slots
-        self._active_stream.add_slots(self._max_packets)
+        self._active_stream.add_posts(self._max_packets)
         # Start checking if processed data arrived to queue
         self.on_load_posts(index)
 
@@ -182,7 +187,7 @@ class CoubAppUI(QWidget):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _reload_posts(self, index):
         # Refresh posts
-        self._active_stream.spin(reload=True)
+        pass
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -201,7 +206,7 @@ class CoubAppUI(QWidget):
         self._posts = posts = QScrollArea()
         posts.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         posts.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
+        # posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
         posts.setFrameShape(QFrame.NoFrame)
         main_layout.addWidget(posts)
 

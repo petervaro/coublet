@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.703 (20140806)                       ##
+##                       Version: 0.5.70.800 (20140808)                       ##
 ##                                                                            ##
 ##                             File: ui/stream.py                             ##
 ##                                                                            ##
@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout
 # Import coublet modules
 import gui
 import wdgt
-from ui.post import CoubPostUI
+from .post import CoubPostUI
 
 #------------------------------------------------------------------------------#
 class CoubStreamUI(QWidget):
@@ -36,34 +36,43 @@ class CoubStreamUI(QWidget):
         super().__init__(parent)
 
         # Store static values
-        # ??? Do we need this index value ???
         self.index = index
         self.visited = False
+
+        self._posts = set()
         # Build UI
         self._build_gui()
         # Initially hide spinner
         self.spinner.hide()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def add_slots(self, count):
+    def add_posts(self, count):
         layout = self.layout
-        # Insert before space
+        posts  = self._posts
+        # Insert posts before stretch
         self._post_index = post_index = layout.count() - 2
         for i in range(count):
-            layout.insertWidget(post_index, QWidget())#, alignment=Qt.AlignTop)
-            # layout.insertSpacing(post_index, gui.POST_SPACING)
+            post = CoubPostUI()
+            posts.add(post)
+            layout.insertWidget(post_index, post)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def add_post(self, post):
-        layout = self.layout
+    def load_post(self, post):
+        # Get index and coublet-packet
         index, packet = post
-        post_index = self._post_index + index + 1
-        # Remove slot
-        # layout.itemAt(post_index).widget().hide()
-        # Add widget and tail padding
-        # layout.insertWidget(post_index, CoubPostUI(packet), alignment=Qt.AlignTop)
-        layout.replaceWidget(layout.itemAt(post_index).widget(),
-                             CoubPostUI(packet))
+        post_index = self._post_index + index
+        # Load content into the previously created CoubPostUI widget
+        self.layout.itemAt(post_index).widget().load(packet)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def reset_unseen_posts(self):
+        # Iterate through all posts
+        for post in self._posts:
+            # And if post is not visible
+            # (not rendered) and not playing
+            if post.visibleRegion().isEmpty():
+                # Reset that post
+                post.kill()
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def spin(self, reload=False):
@@ -107,8 +116,7 @@ class CoubStreamUI(QWidget):
                                         order=wdgt.ICON_AND_LABEL,
                                         orientation=wdgt.VERTICAL,
                                         spacing=gui.SMALL_PADDING,
-                                        padding_x=gui.LARGE_PADDING,
-                                        padding_y=gui.LARGE_PADDING))
+                                        padding_top=gui.POST_SPACING))
         # Add scroll-down icon and text
         layout.addStretch(0)
         layout.addWidget(wdgt.IconLabel(icon=gui.CONSTANTS['icon_scroll_down'],
@@ -118,7 +126,6 @@ class CoubStreamUI(QWidget):
                                         order=wdgt.LABEL_AND_ICON,
                                         orientation=wdgt.VERTICAL,
                                         spacing=gui.SMALL_PADDING,
-                                        padding_x=gui.LARGE_PADDING,
-                                        padding_y=gui.LARGE_PADDING))
+                                        padding_bottom=gui.POST_SPACING))
         # Set layout
         self.setLayout(layout)

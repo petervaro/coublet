@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.668 (20140806)                       ##
+##                       Version: 0.5.70.729 (20140807)                       ##
 ##                                                                            ##
 ##                                File: gui.py                                ##
 ##                                                                            ##
@@ -52,8 +52,9 @@ _SANS = 'Source Sans Pro'
 # run before any Q* object could be made or set
 CONSTANTS = {}
 
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 def _image(file, rotate=None):
     pixmap = QPixmap(os_path_join('img', file))
     if rotate is None:
@@ -62,12 +63,14 @@ def _image(file, rotate=None):
     transform.rotate(rotate)
     return pixmap.transformed(transform)
 
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 def _color(parent, place, string, alpha=100):
     alpha = '{:X}'.format(round(2.55 * alpha))
     palette = QPalette(parent)
     palette.setColor(QPalette.Background if place else QPalette.Foreground,
                      QColor(*(int(a+b, 16) for a, b in zip(*(iter(string + alpha),)*2))))
     return palette
+
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #

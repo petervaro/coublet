@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.61.564 (20140805)                       ##
+##                       Version: 0.5.70.800 (20140808)                       ##
 ##                                                                            ##
 ##                               File: wdgt.py                                ##
 ##                                                                            ##
@@ -81,15 +81,15 @@ class IconLabel(QWidget):
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     # TODO: do something with width and height if provided
     def __init__(self, icon, label, order, orientation, font=None, palette=None,
-                 width=0, height=0, padding_x=0, padding_y=0, spacing=0,
-                 parent=None, mouse_event_handler=None):
+                 width=0, height=0, spacing=0, parent=None, mouse_event_handler=None,
+                 padding_left=0, padding_top=0, padding_right=0, padding_bottom=0):
         super().__init__(parent)
 
         # Create layout
         layout = QHBoxLayout() if orientation else QVBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(*(padding_x, padding_y)*2)
-
+        layout.setContentsMargins(padding_left, padding_top,
+                                  padding_right, padding_bottom)
         # Set icon
         image = QLabel()
         image.setPixmap(icon)

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.703 (20140806)                       ##
+##                       Version: 0.5.70.808 (20140808)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -24,28 +24,28 @@ FIXME:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: gui.py
-    line: 76
+    line: 79
     note: |
           the mask produced by this function
           does not have antialiased edges
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
-  - file: ui/post.py
-    line: 345
-    note: |
-          DropShadow has a "funny" effect on the post,
-          because of that the full info-bar scrolls away
-          after the video started playing
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
   - file: ui/app.py
-    line: 102
+    line: 124
     note: |
           probably we are storing the wrong dimensions,
           window is going upper and upper om each run
           or is it wrongly loaded ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 3
+  - file: ui/post.py
+    line: 407
+    note: |
+          DropShadow has a "funny" effect on the post,
+          because of that the full info-bar scrolls away
+          after the video started playing
 
 
 
@@ -53,133 +53,127 @@ FIXME:
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: wdgt.py
-    line: 82
-    note: |
-          do something with width and height if provided
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
-  - file: gui.py
-    line: 113
-    note: |
-          after the design is settled, remove unnecessary font files
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
-  - file: ui/post.py
-    line: 81
-    note: |
-          place error label to the right position
-          for testing see on_error's note
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
-  - file: ui/post.py
-    line: 93
-    note: |
-          double right click => restart video and audio
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
-  - file: ui/post.py
-    line: 143
-    note: |
-          make error label appear on the video itself
-          test: CoubPost(parent, None) --> error loading media
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
-  - file: ui/post.py
-    line: 191
-    note: |
-          delete widget and its content
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 7
-  - file: ui/post.py
-    line: 251
-    note: |
-          wrap words of title and author
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
   - file: com.py
-    line: 43
+    line: 36
     note: |
           handle connection errors, like:
           urllib.error.HTTPError: HTTP Error 403: Forbidden
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
+  # 2
   - file: com.py
-    line: 47
+    line: 40
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
+  # 3
+  - file: gui.py
+    line: 116
+    note: |
+          after the design is settled, remove unnecessary font files
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
   - file: main.py
-    line: 43
+    line: 42
     note: |
           read version from file (where will VERSION file be in the final app?)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
+  # 5
   - file: main.py
-    line: 159
+    line: 160
     note: |
           indicate this to the user somehow
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
+  # 6
   - file: main.py
-    line: 235
+    line: 237
     note: |
           catch all exceptions, store it to a log file, write that into
           the cache file and ask the user if he wants to send it to us
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
+  # 7
   - file: ui/app.py
     line: 35
     note: |
           REFRESH DATA
           ON REFRESH, SCROLL TO LAST POST
-          SOLVE DOWNLOAD/PLACING ORDER PROBLEM
-          OPTIMISE: IF VIDEO NOT PLAYING AND NOT VISIBLE, KILL AUDIO AND VIDEO
           PRETTIFY GUI
           REFACTOR CODE AND REPO
           
-          Harry Potter < 3:11:00
+          Harry Potter @ 0:33:50
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 8
+  - file: ui/app.py
+    line: 97
+    note: |
+          on stream start (first visit) jumpt at the end of
+          scroll_up arrow, probably using one these?
+          self._posts.verticalScrollBar().value()      # getter
+          self._posts.verticalScrollBar().setValue()   # setter
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 9
+  - file: ui/app.py
+    line: 103
+    note: |
+          consider: we don't need active stream, we need active index!
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 10
+  - file: wdgt.py
+    line: 82
+    note: |
+          do something with width and height if provided
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 11
+  - file: ui/post.py
+    line: 92
+    note: |
+          place error label to the right position
+          for testing see on_error's note
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 12
+  - file: ui/post.py
+    line: 145
+    note: |
+          make error label appear on the video itself
+          test: CoubPost(parent, None) --> error loading media
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 13
+  - file: ui/post.py
+    line: 238
+    note: |
+          delete widget and its content
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 14
-  - file: ui/app.py
-    line: 75
+  - file: ui/post.py
+    line: 322
     note: |
-          implerment real up and "over scroll" by
-          overwriting wheelEvent
-          self.wheelEvent = self.on_mouse_scroll
-          and with event.pixelDelta() -> check QWheelEvent
-          probably: step1: show arrows, step2: action!
+          wrap words of title and author
 
 
 
-#----------------------------- 2 POSTS IN 1 FILES -----------------------------#
+#----------------------------- 0 POSTS IN 0 FILES -----------------------------#
+HACK:
+
+
+#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
 QUESTION:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
   - file: ui/stream.py
-    line: 39
-    note: |
-          Do we need this index value ???
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
-  - file: ui/stream.py
-    line: 86
+    line: 95
     note: |
           setParent() or close() ???
 

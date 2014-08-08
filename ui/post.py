@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.672 (20140806)                       ##
+##                       Version: 0.5.70.808 (20140808)                       ##
 ##                                                                            ##
 ##                              File: ui/post.py                              ##
 ##                                                                            ##
@@ -38,19 +38,27 @@ import wdgt
 #------------------------------------------------------------------------------#
 class CoubPostUI(QWidget):
 
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, packet=None, parent=None):
-        super().__init__(parent)
+    WIDTH = 320
 
-        # Get and set dimension of content (coub)
-        width = 320
-        height = int(width*packet['ratio'])
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         # Set flags
         self._post = True
         self._mute = False
+        self._stop = True
         self._audio_loop = False
         self._video_loop = False
+
+        self._build_gui1()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def load(self, packet=None):
+        # Get and set dimension of content (coub)
+        width = self.WIDTH
+        height = int(width*packet['ratio'])
 
         # Store static values
         self._link = packet['perma']
@@ -75,7 +83,10 @@ class CoubPostUI(QWidget):
             self.audio_player = audio_player = QMediaPlayer(None)
             audio_player.stateChanged.connect(self.on_audio_state_changed)
             audio_player.error.connect(self.on_error)
-            audio_player.setMedia(QMediaContent(QUrl(audio)))
+            # Store MediaContent, otherwise it
+            # will be GC'd after stop() or kill()
+            self._audio = QMediaContent(QUrl(audio))
+            audio_player.setMedia(self._audio)
 
         # Set error label
         # TODO: place error label to the right position
@@ -84,26 +95,87 @@ class CoubPostUI(QWidget):
         error.setFont(gui.CONSTANTS['text_font_generic'])
 
         # Build GUI (style)
-        self.build_gui(packet, width, height)
+        self._build_gui2(packet, width, height)
 
         # Overload event (just for the sake of under-scored names:)
         self.mouseReleaseEvent = self.on_mouse_release
 
         # Set mouse events
-        # TODO: double right click => restart video and audio
         interval = QApplication.instance().doubleClickInterval()
         self._clicker = wdgt.MouseClick(interval,
                                         l_single=self.play,
                                         l_double=self.open,
-                                        r_single=self.mute)
+                                        r_single=self.mute,
+                                        r_double=self.stop)
         # Hide unneeded widgets
         video.hide()
         error.hide()
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_mouse_release(self, event):
         # Handle mouse event
         self._clicker.click(event.button())
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_audio_state_changed(self, event):
+        # If playing => has to be looped => start over!
+        if self._audio_loop:
+            self.audio_player.play()
+        # If paused
+        else:
+            # Reset looping
+            self._audio_loop = True
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_video_state_changed(self, state):
+        # If playing => has to be looped => start over!
+        if self._video_loop:
+            self.video_player.play()
+        # If paused
+        else:
+            # Reset looping
+            self._video_loop = True
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_error(self):
+        # TODO: make error label appear on the video itself
+        #       test: CoubPost(parent, None) --> error loading media
+        self._post = False
+        self._video_loop = False
+        self.error.show()
+        self.error.setText('ERROR: ' + self.video_player.errorString().upper())
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def kill(self):
+        # If post fully loaded
+        try:
+            # A wrapper around stop() to be called by the stream
+            # when post is not visible and not playing video
+            if not self._stop:
+                self.stop()
+        # If post is loading right now
+        except AttributeError:
+            pass
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def stop(self):
+        self._video_loop = False
+        self.video_player.stop()
+        self.video.hide()
+        try:
+            self._audio_loop = False
+            self.audio_player.stop()
+        except AttributeError:
+            pass
+        self.thumb.show()
+        self._stop = True
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def open(self):
@@ -118,33 +190,6 @@ class CoubPostUI(QWidget):
         # Open in browser
         webbrowser.open_new_tab(self._link)
 
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_audio_state_changed(self, event):
-        # If looping
-        if self._audio_loop:
-            self.audio_player.play()
-        # If paused
-        else:
-            # Reset looping
-            self._audio_loop = True
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_video_state_changed(self, state):
-        # If looping
-        if self._video_loop:
-            self.video_player.play()
-        # If paused
-        else:
-            # Reset looping
-            self._video_loop = True
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_error(self):
-        # TODO: make error label appear on the video itself
-        #       test: CoubPost(parent, None) --> error loading media
-        self._post = False
-        self.error.show()
-        self.error.setText('ERROR: ' + self.video_player.errorString().upper())
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def mute(self):
@@ -168,6 +213,7 @@ class CoubPostUI(QWidget):
             except AttributeError:
                 pass
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def play(self):
         # If post is not valid
@@ -186,6 +232,7 @@ class CoubPostUI(QWidget):
         # If paused
         else:
             # Start playing the loop
+            self._stop = False
             self._audio_loop = True
             self._video_loop = True
             # TODO: delete widget and its content
@@ -197,12 +244,36 @@ class CoubPostUI(QWidget):
             except AttributeError:
                 pass
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def build_gui(self, packet, width, height):
+    def _build_gui1(self):
         # Create layout object for full post and zero-out
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(0)
-        main_layout.setContentsMargins(*(0,)*4)
+        self._layout = layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(*(0,)*4)
+
+        # Indicate loading
+        layout.addWidget(wdgt.AnimatedGif(gui.CONSTANTS['anim_spinner'], 20, 20),
+                         alignment=Qt.AlignHCenter)
+
+        # Set layout for this widget
+        self.setLayout(layout)
+
+        # Set color of this widget
+        self.setAutoFillBackground(True)
+        self.setPalette(gui.CONSTANTS['panel_color_light'])
+
+        # Set size and load content
+        self.setFixedSize(self.WIDTH + 2*gui.SMALL_PADDING, gui.USER_SIZE)
+
+        # Make it rounded
+        gui._rounded_rectangle(self, *(gui.SMALL_PADDING,)*4)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _build_gui2(self, packet, width, height):
+        main_layout = self._layout
+        main_layout.takeAt(0)
 
         # Create layout for content
         content_layout = QHBoxLayout()
@@ -328,17 +399,8 @@ class CoubPostUI(QWidget):
         main_layout.addSpacing(gui.SMALL_PADDING)
         height += gui.SMALL_PADDING
 
-        # Set layout for this widget
-        self.setLayout(main_layout)
-
-        # Set color of this widget
-        self.setAutoFillBackground(True)
-        self.setPalette(gui.CONSTANTS['panel_color_light'])
-
-
         # Set size and load content
-        self.setFixedSize(width + 2*gui.SMALL_PADDING, height)
-
+        self.setFixedHeight(height)
         # Make it rounded
         gui._rounded_rectangle(self, *(gui.SMALL_PADDING,)*4)
 

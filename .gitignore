@@ -3,6 +3,9 @@
 *.sublime-workspace
 
 cutils
+build
+dist
+__blendercache__
 
 .ccom_cache
 .ccom_todo
