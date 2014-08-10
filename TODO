@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.808 (20140808)                       ##
+##                       Version: 0.5.80.984 (20140810)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -19,29 +19,12 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 3 POSTS IN 3 FILES -----------------------------#
+#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
 FIXME:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: gui.py
-    line: 79
-    note: |
-          the mask produced by this function
-          does not have antialiased edges
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
-  - file: ui/app.py
-    line: 124
-    note: |
-          probably we are storing the wrong dimensions,
-          window is going upper and upper om each run
-          or is it wrongly loaded ???
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
   - file: ui/post.py
-    line: 407
+    line: 247
     note: |
           DropShadow has a "funny" effect on the post,
           because of that the full info-bar scrolls away
@@ -53,6 +36,28 @@ FIXME:
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
+  - file: main.py
+    line: 42
+    note: |
+          read version from file (where will VERSION file be in the final app?)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: main.py
+    line: 160
+    note: |
+          indicate this to the user somehow
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 3
+  - file: main.py
+    line: 237
+    note: |
+          catch all exceptions, store it to a log file, write that into
+          the cache file and ask the user if he wants to send it to us
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
   - file: com.py
     line: 36
     note: |
@@ -61,43 +66,36 @@ TODO:
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
+  # 5
   - file: com.py
     line: 40
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
+  # 6
   - file: gui.py
-    line: 116
+    line: 89
     note: |
           after the design is settled, remove unnecessary font files
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
-  - file: main.py
-    line: 42
-    note: |
-          read version from file (where will VERSION file be in the final app?)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
-  - file: main.py
-    line: 160
-    note: |
-          indicate this to the user somehow
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
-  - file: main.py
-    line: 237
-    note: |
-          catch all exceptions, store it to a log file, write that into
-          the cache file and ask the user if he wants to send it to us
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 7
+  - file: wdgt.py
+    line: 89
+    note: |
+          do something with width and height if provided
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 8
+  - file: wdgt.py
+    line: 149
+    note: |
+          add error handling to player
+          player.error.connect(self.on_error)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 9
   - file: ui/app.py
     line: 35
     note: |
@@ -106,61 +104,45 @@ TODO:
           PRETTIFY GUI
           REFACTOR CODE AND REPO
           
-          Harry Potter @ 0:33:50
+          Harry Potter @ 1:23:29
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
+  # 10
   - file: ui/app.py
-    line: 97
-    note: |
-          on stream start (first visit) jumpt at the end of
-          scroll_up arrow, probably using one these?
-          self._posts.verticalScrollBar().value()      # getter
-          self._posts.verticalScrollBar().setValue()   # setter
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
-  - file: ui/app.py
-    line: 103
+    line: 85
     note: |
           consider: we don't need active stream, we need active index!
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
-  - file: wdgt.py
-    line: 82
+  # 11
+  - file: ui/app.py
+    line: 130
     note: |
-          do something with width and height if provided
+          menu should be highlighted when selected
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
+  # 12
   - file: ui/post.py
-    line: 92
+    line: 85
     note: |
           place error label to the right position
           for testing see on_error's note
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
+  # 13
   - file: ui/post.py
-    line: 145
+    line: 136
     note: |
           make error label appear on the video itself
           test: CoubPost(parent, None) --> error loading media
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
-  - file: ui/post.py
-    line: 238
-    note: |
-          delete widget and its content
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 14
   - file: ui/post.py
-    line: 322
+    line: 294
     note: |
-          wrap words of title and author
+          wrapping properly!
+          title.setWordWrap(True)
 
 
 
@@ -168,13 +150,6 @@ TODO:
 HACK:
 
 
-#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
+#----------------------------- 0 POSTS IN 0 FILES -----------------------------#
 QUESTION:
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 1
-  - file: ui/stream.py
-    line: 95
-    note: |
-          setParent() or close() ???
-
 

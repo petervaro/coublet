@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.808 (20140808)                       ##
+##                       Version: 0.5.80.984 (20140810)                       ##
 ##                                                                            ##
 ##                              File: ui/post.py                              ##
 ##                                                                            ##
@@ -24,8 +24,7 @@ import webbrowser
 
 # Import PyQt5 modules
 from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtGui import QPixmap, QPainter, QBrush
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QHBoxLayout,
                              QVBoxLayout, QGraphicsDropShadowEffect)
@@ -49,7 +48,8 @@ class CoubPostUI(QWidget):
         self._mute = False
         self._stop = True
         self._audio_loop = False
-        self._video_loop = False
+
+        self.paintEvent = self.on_draw
 
         self._build_gui1()
 
@@ -63,24 +63,17 @@ class CoubPostUI(QWidget):
         # Store static values
         self._link = packet['perma']
 
-        # Create thumbnail preview
-        self.thumb = thumb = QLabel(self)
-        thumb.setPixmap(QPixmap(packet['thumb'][1]).scaled(width, height))
-
-        # Create video player and its content
-        self.video = video = QVideoWidget(self)
-        video.setFixedSize(width, height)
-
-        self.video_player = video_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        video_player.setVideoOutput(video)
-        video_player.stateChanged.connect(self.on_video_state_changed)
-        video_player.error.connect(self.on_error)
-        video_player.setMedia(QMediaContent(QUrl.fromLocalFile(packet['video'][1])))
+        # Create a video player
+        self._video = wdgt.VideoWithThumbnail(width=width,
+                                              height=height,
+                                              thumb_file=packet['thumb'][1],
+                                              video_file=packet['video'][1],
+                                              looping=True)
 
         # Create audio player and its content
         audio = packet['audio']
         if audio:
-            self.audio_player = audio_player = QMediaPlayer(None)
+            self.audio_player = audio_player = QMediaPlayer(None, QMediaPlayer.StreamPlayback)
             audio_player.stateChanged.connect(self.on_audio_state_changed)
             audio_player.error.connect(self.on_error)
             # Store MediaContent, otherwise it
@@ -108,8 +101,17 @@ class CoubPostUI(QWidget):
                                         r_single=self.mute,
                                         r_double=self.stop)
         # Hide unneeded widgets
-        video.hide()
         error.hide()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def on_draw(self, event):
+        # Setup drawing object
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(gui.CONSTANTS['panel_color_light'], Qt.SolidPattern))
+        # Draw rounded rectangle
+        painter.drawRoundedRect(self.rect(), *(gui.POST_ROUNDNESS,)*2)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -130,22 +132,10 @@ class CoubPostUI(QWidget):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_video_state_changed(self, state):
-        # If playing => has to be looped => start over!
-        if self._video_loop:
-            self.video_player.play()
-        # If paused
-        else:
-            # Reset looping
-            self._video_loop = True
-
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_error(self):
         # TODO: make error label appear on the video itself
         #       test: CoubPost(parent, None) --> error loading media
         self._post = False
-        self._video_loop = False
         self.error.show()
         self.error.setText('ERROR: ' + self.video_player.errorString().upper())
 
@@ -165,15 +155,12 @@ class CoubPostUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def stop(self):
-        self._video_loop = False
-        self.video_player.stop()
-        self.video.hide()
+        self._video.stop()
         try:
             self._audio_loop = False
             self.audio_player.stop()
         except AttributeError:
             pass
-        self.thumb.show()
         self._stop = True
 
 
@@ -181,8 +168,7 @@ class CoubPostUI(QWidget):
     def open(self):
         # Stop playing
         self._audio_loop = False
-        self._video_loop = False
-        self.video_player.pause()
+        self._video.pause()
         try:
             self.audio_player.pause()
         except AttributeError:
@@ -199,7 +185,7 @@ class CoubPostUI(QWidget):
         # If already muted
         elif self._mute:
             self._mute = False
-            self.video_player.setVolume(100)
+            self._video.set_volume(100)
             try:
                 self.audio_player.setVolume(100)
             except AttributeError:
@@ -207,7 +193,7 @@ class CoubPostUI(QWidget):
         # If needs to be muted
         else:
             self._mute = True
-            self.video_player.setVolume(0)
+            self._video.set_volume(0)
             try:
                 self.audio_player.setVolume(0)
             except AttributeError:
@@ -220,11 +206,10 @@ class CoubPostUI(QWidget):
         if not self._post:
             return
         # If playing
-        elif self.video_player.state() == QMediaPlayer.PlayingState:
+        elif self._video.state() == QMediaPlayer.PlayingState:
             # Stop playing the loop
             self._audio_loop = False
-            self._video_loop = False
-            self.video_player.pause()
+            self._video.pause()
             try:
                 self.audio_player.pause()
             except AttributeError:
@@ -234,11 +219,7 @@ class CoubPostUI(QWidget):
             # Start playing the loop
             self._stop = False
             self._audio_loop = True
-            self._video_loop = True
-            # TODO: delete widget and its content
-            self.thumb.hide()
-            self.video.show()
-            self.video_player.play()
+            self._video.play()
             try:
                 self.audio_player.play()
             except AttributeError:
@@ -250,50 +231,42 @@ class CoubPostUI(QWidget):
         # Create layout object for full post and zero-out
         self._layout = layout = QVBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(*(0,)*4)
+        layout.setContentsMargins(*(gui.SMALL_PADDING,)*4)
 
         # Indicate loading
-        layout.addWidget(wdgt.AnimatedGif(gui.CONSTANTS['anim_spinner'], 20, 20),
-                         alignment=Qt.AlignHCenter)
+        loading = wdgt.AnimatedGif(gui.CONSTANTS['anim_busy'], 32, 16)
+        loading.random_frame()
+        layout.addWidget(loading, alignment=Qt.AlignHCenter)
 
         # Set layout for this widget
         self.setLayout(layout)
 
-        # Set color of this widget
-        self.setAutoFillBackground(True)
-        self.setPalette(gui.CONSTANTS['panel_color_light'])
-
         # Set size and load content
         self.setFixedSize(self.WIDTH + 2*gui.SMALL_PADDING, gui.USER_SIZE)
 
-        # Make it rounded
-        gui._rounded_rectangle(self, *(gui.SMALL_PADDING,)*4)
+        # FIXME: DropShadow has a "funny" effect on the post,
+        #        because of that the full info-bar scrolls away
+        #        after the video started playing
+
+        # # Add drop shadow to this widget
+        # shadow = QGraphicsDropShadowEffect(self)
+        # shadow.setColor(gui.CONSTANTS['shadow_color'])
+        # shadow.setBlurRadius(gui.POST_SHADOW_BLUR)
+        # shadow.setOffset(0, gui.POST_SHADOW_OFFSET)
+        # self.setGraphicsEffect(shadow)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _build_gui2(self, packet, width, height):
+        # Remove loadiung indicator
         main_layout = self._layout
         main_layout.takeAt(0)
 
-        # Create layout for content
-        content_layout = QHBoxLayout()
-        content_layout.setSpacing(0)
-        content_layout.setContentsMargins(*(0,)*4)
-
         # Add video and thumb to content
-        content_layout.addSpacing(gui.SMALL_PADDING)
-        content_layout.addWidget(self.video)
-        content_layout.addWidget(self.thumb)
-        content_layout.addSpacing(gui.SMALL_PADDING)
+        main_layout.addWidget(self._video)
 
-        # Add layout to main layout
-        main_layout.addSpacing(gui.SMALL_PADDING)
-        height += gui.SMALL_PADDING
-        main_layout.addLayout(content_layout)
-
-        # Add padding, increase total height
-        main_layout.addSpacing(gui.SMALL_PADDING)
-        height += gui.SMALL_PADDING
+        # Leading and trailing padding (margins)
+        height += gui.SMALL_PADDING*2
 
         # Create layout object for info bar and zero-out
         info_layout = QHBoxLayout()
@@ -309,9 +282,7 @@ class CoubPostUI(QWidget):
         else:
             avatar_image = gui.CONSTANTS['icon_no_avatar']
         avatar.setPixmap(avatar_image)
-        info_layout.addSpacing(gui.SMALL_PADDING)
         info_layout.addWidget(avatar)
-
 
         # Create layout for text and zero-out
         text_layout = QVBoxLayout()
@@ -319,8 +290,9 @@ class CoubPostUI(QWidget):
         text_layout.setContentsMargins(*(0,)*4)
 
         # Create and add title
-        # TODO: wrap words of title and author
         title = QLabel('“{}”'.format(packet['title']))
+        # TODO: wrapping properly!
+        # title.setWordWrap(True)
         title.setFont(gui.CONSTANTS['text_font_title'])
         title.setPalette(gui.CONSTANTS['text_color_dark'])
         text_layout.addWidget(title)
@@ -389,28 +361,14 @@ class CoubPostUI(QWidget):
         info_layout.addWidget(separator)
         info_layout.addSpacing(gui.SMALL_PADDING)
         info_layout.addLayout(social_layout)
-        info_layout.addSpacing(gui.SMALL_PADDING)
 
         # Add info, increase total height
+        main_layout.addSpacing(gui.SMALL_PADDING)
         main_layout.addLayout(info_layout)
         height += avatar_image.height()
 
         # Add bottom padding
-        main_layout.addSpacing(gui.SMALL_PADDING)
         height += gui.SMALL_PADDING
 
         # Set size and load content
         self.setFixedHeight(height)
-        # Make it rounded
-        gui._rounded_rectangle(self, *(gui.SMALL_PADDING,)*4)
-
-        # FIXME: DropShadow has a "funny" effect on the post,
-        #        because of that the full info-bar scrolls away
-        #        after the video started playing
-
-        # # Add drop shadow to this widget
-        # shadow = QGraphicsDropShadowEffect(widget)
-        # shadow.setColor(gui.CONSTANTS['shadow_color'])
-        # shadow.setBlurRadius(15)
-        # shadow.setOffset(0, 3)
-        # self.setGraphicsEffect(shadow)

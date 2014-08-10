@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.800 (20140808)                       ##
+##                       Version: 0.5.80.980 (20140810)                       ##
 ##                                                                            ##
 ##                               File: wdgt.py                                ##
 ##                                                                            ##
@@ -19,10 +19,17 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
+# Import python modules
+from random import random
+
+# Import PyQt5 modules
 from PyQt5.QtGui import QMovie, QPixmap, QPalette
-from PyQt5.QtCore import Qt, QTimer, QByteArray
+from PyQt5.QtCore import Qt, QTimer, QByteArray, QUrl
+from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
 
+# Module level constants
 ICON_AND_LABEL = 0
 LABEL_AND_ICON = 1
 
@@ -120,6 +127,75 @@ class IconLabel(QWidget):
         self._event_handler.click(event.button())
 
 
+#------------------------------------------------------------------------------#
+class VideoWithThumbnail(QWidget):
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def __init__(self, width, height, thumb_file, video_file, looping, parent=None):
+        super().__init__(parent)
+
+        self.setFixedSize(width, height)
+
+        # Create thumbnail preview
+        self._thumb = thumb = QLabel(self)
+        thumb.setPixmap(QPixmap(thumb_file).scaled(width, height))
+
+        # Create video player and its content
+        self._video = video = QVideoWidget(self)
+        video.setFixedSize(width, height)
+
+        self._player = player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        player.setVideoOutput(video)
+        # TODO: add error handling to player
+        # player.error.connect(self.on_error)
+        player.setMedia(QMediaContent(QUrl.fromLocalFile(video_file)))
+
+        if looping:
+            self._loop = False
+            player.stateChanged.connect(self.loop)
+
+        self.stop()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def loop(self, *args, **kwargs):
+        # If playing => has to be looped => start over!
+        if self._loop:
+            self._player.play()
+        # If paused
+        else:
+            # Reset looping
+            self._loop = True
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def play(self):
+        if self._stopped:
+            self._stopped = False
+            self._video.show()
+            self._thumb.hide()
+        self._loop = True
+        self._player.play()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def pause(self):
+        self._loop = False
+        self._player.pause()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def stop(self):
+        self._loop = False
+        self._stopped = True
+        self._thumb.show()
+        self._video.hide()
+        self._player.stop()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def state(self):
+        return self._player.state()
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def set_volume(self, volume):
+        self._player.setVolume(volume)
+
 
 #------------------------------------------------------------------------------#
 class AnimatedGif(QWidget):
@@ -136,7 +212,7 @@ class AnimatedGif(QWidget):
         label = QLabel()
         label.setFixedSize(width, height)
 
-        movie = QMovie(file, QByteArray(), self)
+        self._movie = movie = QMovie(file, QByteArray(), self)
         movie.setCacheMode(QMovie.CacheAll)
         movie.setSpeed(100)
         movie.start()
@@ -145,3 +221,8 @@ class AnimatedGif(QWidget):
         layout.addWidget(label)
 
         self.setLayout(layout)
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def random_frame(self):
+        # Jump to a random frame
+        self._movie.jumpToFrame(int(random() * self._movie.frameCount()))

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.729 (20140807)                       ##
+##                       Version: 0.5.80.973 (20140810)                       ##
 ##                                                                            ##
 ##                                File: gui.py                                ##
 ##                                                                            ##
@@ -35,10 +35,16 @@ import wdgt
 SMALL_PADDING = 5
 LARGE_PADDING = 2*SMALL_PADDING
 
+
 ICON_SIZE = 13
 USER_SIZE = 38
 
-POST_SPACING = 15
+POST_SHADOW_BLUR = 15
+POST_SHADOW_OFFSET = 3
+
+POST_SPACING_HEAD = int((POST_SHADOW_BLUR - POST_SHADOW_OFFSET) / 2)
+POST_SPACING_TAIL = int((POST_SHADOW_BLUR + POST_SHADOW_OFFSET) / 2)
+POST_ROUNDNESS = SMALL_PADDING
 
 FOREGROUND = 0
 BACKGROUND = 1
@@ -53,6 +59,8 @@ _SANS = 'Source Sans Pro'
 CONSTANTS = {}
 
 
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+_rgb = lambda s, a: QColor(*(int(_1+_2, 16) for _1, _2 in zip(*(iter(s+a),)*2)))
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 def _image(file, rotate=None):
@@ -64,50 +72,15 @@ def _image(file, rotate=None):
     return pixmap.transformed(transform)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-def _color(parent, place, string, alpha=100):
-    alpha = '{:X}'.format(round(2.55 * alpha))
+def _palette(parent, place, string, alpha=100):
     palette = QPalette(parent)
     palette.setColor(QPalette.Background if place else QPalette.Foreground,
-                     QColor(*(int(a+b, 16) for a, b in zip(*(iter(string + alpha),)*2))))
+                     _rgb(string, '{:X}'.format(round(2.55 * alpha))))
     return palette
 
-
-
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-def _rounded_rectangle(widget, tl, tr, br, bl):
-
-    # FIXME: the mask produced by this function
-    #        does not have antialiased edges
-
-    width  = widget.width()
-    height = widget.height()
-
-    # A rectangle identical to the widget
-    region = QRegion(0, 0, width, height, QRegion.Rectangle)
-
-    # Set top-left corner
-    radius = QRegion(0, 0, 2*tl, 2*tl, QRegion.Ellipse)
-    corner = QRegion(0, 0, tl, tl, QRegion.Rectangle)
-    region = region.subtracted(corner.subtracted(radius))
-
-    # Set top-right corner
-    radius = QRegion(width - 2*tr, 0, 2*tr, 2*tr, QRegion.Ellipse)
-    corner = QRegion(width - tr, 0, tr, tr, QRegion.Rectangle)
-    region = region.subtracted(corner.subtracted(radius))
-
-    # Set bottom-right corner
-    radius = QRegion(width - 2*br, height - 2*br, 2*br, 2*br, QRegion.Ellipse)
-    corner = QRegion(width - br, height - br, br, br, QRegion.Rectangle)
-    region = region.subtracted(corner.subtracted(radius))
-
-    # Set bottom-left corner
-    radius = QRegion(0, height - 2*bl, 2*bl, 2*bl, QRegion.Ellipse)
-    corner = QRegion(0, height - bl, bl, bl, QRegion.Rectangle)
-    region = region.subtracted(corner.subtracted(radius))
-
-    # Mask widget
-    widget.setMask(region)
-
+def _color(string, alpha=100):
+    return _rgb(string, '{:X}'.format(round(2.55 * alpha)))
 
 
 #------------------------------------------------------------------------------#
@@ -123,14 +96,23 @@ def set_gui_constants(parent):
         fonts.addApplicationFont('font/TTF/SourceSansPro-{}.ttf'.format(weight))
 
     # Palettes
-    CONSTANTS['text_color_dark']    = _color(parent, FOREGROUND, '000000', 45)
-    CONSTANTS['text_color_light']   = _color(parent, FOREGROUND, 'ffffff', 45)
-    CONSTANTS['panel_color_light']  = _color(parent, BACKGROUND, '808080')
-    CONSTANTS['panel_color_dark']   = _color(parent, BACKGROUND, '282828')
-    CONSTANTS['panel_color_darker'] = _color(parent, BACKGROUND, '181818')
+    CONSTANTS['text_color_dark']    = _palette(parent, FOREGROUND, '000000', 45)
+    CONSTANTS['text_color_light']   = _palette(parent, FOREGROUND, 'ffffff', 45)
+    # CONSTANTS['panel_color_light']  = _palette(parent, BACKGROUND, '808080')
+    CONSTANTS['panel_color_dark']   = _palette(parent, BACKGROUND, '282828')
+    CONSTANTS['panel_color_darker'] = _palette(parent, BACKGROUND, '181818')
 
     # Colors
-    # CONSTANTS['shadow_color'] = QColor(0x00, 0x00, 0x00, _alpha(70))
+    CONSTANTS['shadow_color'] = _color('000000', 70)
+    CONSTANTS['panel_color_light'] = _color('808080')
+
+    DEBUG_ALPHA = 40
+    CONSTANTS['debug1'] = _color('ffff00', DEBUG_ALPHA)
+    CONSTANTS['debug2'] = _color('00ffff', DEBUG_ALPHA)
+    CONSTANTS['debug3'] = _color('ff00ff', DEBUG_ALPHA)
+    CONSTANTS['debug4'] = _color('ff0000', DEBUG_ALPHA)
+    CONSTANTS['debug5'] = _color('00ff00', DEBUG_ALPHA)
+    CONSTANTS['debug6'] = _color('0000ff', DEBUG_ALPHA)
 
     # Fonts
     CONSTANTS['text_font_title']   = QFont(_SANS, 16, QFont.Light)
@@ -153,4 +135,4 @@ def set_gui_constants(parent):
     CONSTANTS['other_separator'] = _image('separator.png')
 
     # Animation
-    CONSTANTS['anim_spinner']     = os_path_join('img', 'spinner.gif')
+    CONSTANTS['anim_busy']     = os_path_join('img', 'loading.gif')

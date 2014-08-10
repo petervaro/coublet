@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.719 (20140806)                       ##
+##                       Version: 0.5.80.966 (20140810)                       ##
 ##                                                                            ##
 ##                                File: com.py                                ##
 ##                                                                            ##
@@ -53,7 +53,7 @@ class DownloadPacket(threading.Thread):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, index, packet, queue, data, app_name, app_version):
-        super().__init__(self, daemon=True)
+        super().__init__()
         self._data = data
         self._index = index
         self._queue = queue
@@ -80,7 +80,7 @@ class DownloadJson(threading.Thread):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, url, queue, app_name, app_version,):
-        super().__init__(self, daemon=True)
+        super().__init__()
         self._url = url
         self._queue = queue
         self._header = _header(app_name, app_version)

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.799 (20140808)                       ##
+##                       Version: 0.5.80.981 (20140810)                       ##
 ##                                                                            ##
 ##                              File: ui/app.py                               ##
 ##                                                                            ##
@@ -37,7 +37,7 @@ from .stream import CoubStreamUI
 #       PRETTIFY GUI
 #       REFACTOR CODE AND REPO
 #
-#       Harry Potter @ 0:33:50
+#       Harry Potter @ 1:23:29
 
 #------------------------------------------------------------------------------#
 class CoubAppUI(QWidget):
@@ -69,36 +69,18 @@ class CoubAppUI(QWidget):
         self._loading = []
 
         # Build GUI
-        self._build_gui()
+        self._build_gui(dimension)
 
         # Overload closing and scrolling event, and rename it just
         # for the sake of under-scored names ;)
         self.closeEvent = self.on_exit
         self.wheelEvent = self.on_mouse_scroll
 
-        # Unpack dimension data
-        x, y, width, height = dimension
-
-        # If position have not been set before
-        if x is NotImplemented:
-            screen = QDesktopWidget().screenGeometry()
-            x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
-        # Set window position and dimension
-        self.setGeometry(x, y, width, height)
-        self.setMaximumWidth(width)
-
-        self._xxx = True
-
         # Load first stream
         self.on_menu_button_pressed(0)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_mouse_scroll(self, event):
-        # TODO: on stream start (first visit) jumpt at the end of
-        #       scroll_up arrow, probably using one these?
-        #       self._posts.verticalScrollBar().value()      # getter
-        #       self._posts.verticalScrollBar().setValue()   # setter
-
         # Get index of currently active stream
         # TODO: consider: we don't need active stream, we need active index!
         index = self._active_stream.index
@@ -121,10 +103,9 @@ class CoubAppUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_exit(self, event):
-        # FIXME: probably we are storing the wrong dimensions,
-        #        window is going upper and upper om each run
-        #        or is it wrongly loaded ???
-        dim = self.frameGeometry()
+        # Get current dimensions
+        dim = self.geometry()
+        # Save dimensions for next startup
         self._root.on_exit((dim.x(), dim.y(), dim.width(), dim.height()))
         event.accept()
 
@@ -138,7 +119,6 @@ class CoubAppUI(QWidget):
                 self._loading[index] -= 1
                 # If fetched all data, stop scheduling
                 if not self._loading[index]:
-                    self._streams[index].spin_off()
                     return
         except queue.Empty:
             # Start loading posts again later
@@ -147,6 +127,8 @@ class CoubAppUI(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_menu_button_pressed(self, index):
+        # TODO: menu should be highlighted when selected
+
         # Get preferred stream
         active_stream = self._streams[index]
 
@@ -157,14 +139,13 @@ class CoubAppUI(QWidget):
 
             # Remove previously active stream
             posts = self._posts
-            posts.takeWidget()
+            posts.takeAt(1)
 
             # Indicate change in window title
             self.setWindowTitle('{} | {}'.format(self._title,
                                                  self._menu_labels[index].upper()))
             # And set new stream
-            posts.setWidget(self._active_stream)
-            posts.setWidgetResizable(True)
+            posts.insertLayout(1, self._active_stream)
 
             # If first visit of active stream
             if not self._active_stream.visited:
@@ -191,7 +172,7 @@ class CoubAppUI(QWidget):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _build_gui(self):
+    def _build_gui(self, dimension):
         # Storages
         streams = self._streams
         packets = self._packets
@@ -203,11 +184,45 @@ class CoubAppUI(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
 
         # Create and add scrollable area for streams
-        self._posts = posts = QScrollArea()
+        posts = QScrollArea()
+        posts.setWidgetResizable(True)
         posts.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         posts.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # posts.verticalScrollBar().valueChanged.connect(self._on_update_stream)
         posts.setFrameShape(QFrame.NoFrame)
+
+        # Create a main-stream widget
+        main_stream = QWidget()
+
+        post_spacing = gui.POST_SPACING_HEAD + gui.POST_SPACING_TAIL
+
+        self._posts = posts_layout = QVBoxLayout()
+        posts_layout.setSpacing(post_spacing)
+        posts_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Add scroll-up icon and text
+        posts_layout.addWidget(wdgt.IconLabel(icon=gui.CONSTANTS['icon_scroll_up'],
+                                              label='SCROLL UP TO REFRESH',
+                                              font=gui.CONSTANTS['text_font_generic'],
+                                              palette=gui.CONSTANTS['text_color_light'],
+                                              order=wdgt.ICON_AND_LABEL,
+                                              orientation=wdgt.VERTICAL,
+                                              spacing=gui.SMALL_PADDING,
+                                              padding_top=post_spacing))
+        # Dynamic space
+        posts_layout.addStretch(0)
+        # Add scroll-down icon and text
+        posts_layout.addWidget(wdgt.IconLabel(icon=gui.CONSTANTS['icon_scroll_down'],
+                                              label='SCROLL DOWN TO LOAD MORE',
+                                              font=gui.CONSTANTS['text_font_generic'],
+                                              palette=gui.CONSTANTS['text_color_light'],
+                                              order=wdgt.LABEL_AND_ICON,
+                                              orientation=wdgt.VERTICAL,
+                                              spacing=gui.SMALL_PADDING,
+                                              padding_bottom=post_spacing))
+
+        # Set posts' layout to stream, add stream to main layout
+        main_stream.setLayout(posts_layout)
+        posts.setWidget(main_stream)
         main_layout.addWidget(posts)
 
         # Create menu-bar
@@ -266,3 +281,15 @@ class CoubAppUI(QWidget):
         self.setPalette(gui.CONSTANTS['panel_color_dark'])
         # Set last stream as selected
         self._active_stream = stream
+        posts_layout.insertLayout(1, stream)
+
+        # Unpack dimension data
+        x, y, width, height = dimension
+
+        # If position have not been set before
+        if x is NotImplemented:
+            screen = QDesktopWidget().screenGeometry()
+            x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
+        # Set window position and dimension
+        self.setGeometry(x, y, width, height)
+        self.setFixedWidth(width)

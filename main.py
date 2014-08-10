@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.70.736 (20140807)                       ##
+##                       Version: 0.5.80.956 (20140810)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -40,7 +40,7 @@ from ui.app import CoubAppUI
 
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
-VERSION = 0, 5, 70
+VERSION = 0, 5, 80
 DEV = 1
 
 #------------------------------------------------------------------------------#
