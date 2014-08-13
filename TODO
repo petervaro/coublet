@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.5.80.984 (20140810)                       ##
+##                       Version: 0.6.93.071 (20140813)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -19,12 +19,19 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
-#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
+#----------------------------- 2 POSTS IN 2 FILES -----------------------------#
 FIXME:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: ui/post.py
-    line: 247
+  - file: presenters/window.py
+    line: 39
+    note: |
+          SOME STREAM HAS SCROLL-UP-TO-REFRESH SOME DOESN'T (RANDOM)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 2
+  - file: views/post.py
+    line: 240
     note: |
           DropShadow has a "funny" effect on the post,
           because of that the full info-bar scrolls away
@@ -32,124 +39,125 @@ FIXME:
 
 
 
-#---------------------------- 14 POSTS IN 6 FILES -----------------------------#
+#---------------------------- 13 POSTS IN 7 FILES -----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: main.py
-    line: 42
-    note: |
-          read version from file (where will VERSION file be in the final app?)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
-  - file: main.py
-    line: 160
-    note: |
-          indicate this to the user somehow
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
-  - file: main.py
-    line: 237
-    note: |
-          catch all exceptions, store it to a log file, write that into
-          the cache file and ask the user if he wants to send it to us
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
-  - file: com.py
-    line: 36
+  - file: models/com.py
+    line: 39
     note: |
           handle connection errors, like:
           urllib.error.HTTPError: HTTP Error 403: Forbidden
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
-  - file: com.py
-    line: 40
+  # 2
+  - file: models/com.py
+    line: 43
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
-  - file: gui.py
-    line: 89
+  # 3
+  - file: models/com.py
+    line: 74
     note: |
-          after the design is settled, remove unnecessary font files
+          what happens if not url or not file ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
+  - file: main.py
+    line: 36
+    note: |
+          read version from file (where will VERSION file be in the final app?)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 5
+  - file: main.py
+    line: 65
+    note: |
+          catch all exceptions, store it to a log file, write that into
+          the cache file and ask the user if he wants to send it to us
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 6
+  - file: presenters/stream.py
+    line: 79
+    note: |
+          create a nice icon for this and inform user about it...
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 7
-  - file: wdgt.py
-    line: 89
+  - file: views/post.py
+    line: 129
     note: |
-          do something with width and height if provided
+          make error label appear on the video itself
+          test: CoubPost.load(None) --> error loading media
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 8
-  - file: wdgt.py
-    line: 149
-    note: |
-          add error handling to player
-          player.error.connect(self.on_error)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
-  - file: ui/app.py
-    line: 35
-    note: |
-          REFRESH DATA
-          ON REFRESH, SCROLL TO LAST POST
-          PRETTIFY GUI
-          REFACTOR CODE AND REPO
-          
-          Harry Potter @ 1:23:29
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
-  - file: ui/app.py
-    line: 85
-    note: |
-          consider: we don't need active stream, we need active index!
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
-  - file: ui/app.py
-    line: 130
-    note: |
-          menu should be highlighted when selected
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
-  - file: ui/post.py
-    line: 85
-    note: |
-          place error label to the right position
-          for testing see on_error's note
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
-  - file: ui/post.py
-    line: 136
-    note: |
-          make error label appear on the video itself
-          test: CoubPost(parent, None) --> error loading media
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
-  - file: ui/post.py
-    line: 294
+  - file: views/post.py
+    line: 288
     note: |
           wrapping properly!
           title.setWordWrap(True)
 
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 9
+  - file: views/window.py
+    line: 67
+    note: |
+          this call is at the wrong place
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 10
+  - file: views/window.py
+    line: 139
+    note: |
+          rename self._posts
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 11
+  - file: views/vars.py
+    line: 100
+    note: |
+          after the design is settled, remove unnecessary font files
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 12
+  - file: views/vars.py
+    line: 110
+    note: |
+          distinguish in names:
+          type_palette_property and type_color_property
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 13
+  - file: widgets/button.py
+    line: 37
+    note: |
+          do something with width and height if provided
 
 
-#----------------------------- 0 POSTS IN 0 FILES -----------------------------#
+
+#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
 HACK:
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 1
+  - file: main.py
+    line: 55
+    note: |
+          find an elegant way to solve these global variables
 
 
-#----------------------------- 0 POSTS IN 0 FILES -----------------------------#
+
+#----------------------------- 1 POSTS IN 1 FILES -----------------------------#
 QUESTION:
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 1
+  - file: views/window.py
+    line: 87
+    note: |
+          Do this through window-presenter -> stream-presenter -> stream ???
+
 

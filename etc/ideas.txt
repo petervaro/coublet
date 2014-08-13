@@ -1,0 +1,87 @@
+
+Super Intuitive:
+    No buttons, only mouse gestures.
+Super Efficient:
+    No browser, no flash.
+Super Cool:
+    Keep up to date. Always.
+
+--------------------------------------------------------------------------------
+
+COUBLET
+|
++-- main.py
+|
++-- setup.py
+|
++-- TODO
+|
++-- README
+|
++-- VERSION
+|
++-- INFO
+|
++-- LICENSE
+|
++-- models
+|   |
+|   +-- app.py       -> CoubletAppModel
+|   |
+|   +-- api.py       -> CoubAPI
+|   |
+|   +-- com.py       -> CoubletDownloadPacketThread, CoubletDownloadJSONThread
+|
++-- presenters
+|   |
+|   +-- window.py    -> CoubletWindowPresenter
+|   |
+|   +-- stream.py    -> CoubletStreamPresenter
+|   |
+|   +-- post.py      -> CoubletPostPresenter
+|
++-- views
+|   |
+|   +-- vars.py      -> CONSTANTS
+|   |
+|   +-- window.py    -> CoubletWindowView
+|   |
+|   +-- stream.py    -> CoubletStreamView
+|   |
+|   +-- post.py      -> CoubletPostView
+|
++-- widgets
+|   |
+|   +-- media.py     -> CoubletMediaPlayerWidget
+|   |
+|   +-- button.py    -> CoubletButtonWidget
+|   |
+|   +-- animation.py -> CoubletAnimatedGifWidget
+|   |
+|   +-- handler.py   -> CoubletMouseEventHandler
+|
++-- resources
+|   |
+|   +-- fonts
+|   |   |
+|   |   +-- OTF
+|   |   |
+|   |   +-- TTF
+|   |
+|   +-- artwork
+|       |
+|       +-- icons
+|       |
+|       +-- static
+|       |
+|       +-- motion
+|       |
+|       +-- source
+|
++-- etc
+|
++-- tests
+|
++-- cutils
+|
++-- build
