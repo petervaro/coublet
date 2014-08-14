@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.071 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                            File: views/vars.py                             ##
 ##                                                                            ##
@@ -42,13 +42,13 @@ POST_SPACING_HEAD = int((POST_SHADOW_BLUR - POST_SHADOW_OFFSET) / 2)
 POST_SPACING_TAIL = int((POST_SHADOW_BLUR + POST_SHADOW_OFFSET) / 2)
 POST_ROUNDNESS = SMALL_PADDING
 
-_POST_SPACING = POST_SPACING_HEAD + POST_SPACING_TAIL
+POST_SPACING_FULL = POST_SPACING_HEAD + POST_SPACING_TAIL
 
 FOREGROUND = 0
 BACKGROUND = 1
 
 MEDIA_WIDTH = 320
-DEFAULT_WINDOW_POS_DIM = NotImplemented, 0, MEDIA_WIDTH + 2*_POST_SPACING, 768
+DEFAULT_WINDOW_POS_DIM = NotImplemented, 0, MEDIA_WIDTH + 2*POST_SPACING_FULL, 768
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 _SANS = 'Source Sans Pro'
@@ -115,8 +115,9 @@ def set_gui_constants(parent):
     CONSTANTS['text_color_light']   = _palette(parent, FOREGROUND, 'ffffff', 30)
     CONSTANTS['text_color_light_selected']   = _palette(parent, FOREGROUND, 'ffffff', 85)
     # CONSTANTS['panel_color_light']  = _palette(parent, BACKGROUND, '808080')
-    CONSTANTS['panel_color_dark']   = _palette(parent, BACKGROUND, '282828')
-    CONSTANTS['panel_color_darker'] = _palette(parent, BACKGROUND, '181818')
+    CONSTANTS['panel_color_dark']   = _palette(parent, BACKGROUND, '303030')
+    CONSTANTS['panel_color_darker'] = _palette(parent, BACKGROUND, '101010')
+    CONSTANTS['panel_color_error']  = _palette(parent, BACKGROUND, '000000', 35)
 
     # Colors
     CONSTANTS['shadow_color'] = _color('000000', 70)
@@ -155,4 +156,5 @@ def set_gui_constants(parent):
     CONSTANTS['other_separator'] = _static('separator.png')
 
     # Animation
-    CONSTANTS['anim_busy']     = os_path_join(_BASE_PATH, 'motion', 'loading.gif')
+    CONSTANTS['anim_busy_dark']  = os_path_join(_BASE_PATH, 'motion', 'dark_loader.gif')
+    CONSTANTS['anim_busy_light'] = os_path_join(_BASE_PATH, 'motion', 'light_loader.gif')

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.049 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                          File: presenters/post.py                          ##
 ##                                                                            ##
@@ -45,6 +45,12 @@ class CoubletPostPresenter:
     def get_view(self):
         return self._post
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def load(self, packet):
         self._post.load(packet)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def reset_unseen(self):
+        self._post.kill_if_not_visible()

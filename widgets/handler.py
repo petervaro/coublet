@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.067 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                          File: widgets/handler.py                          ##
 ##                                                                            ##

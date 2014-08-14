@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.060 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                           File: views/stream.py                            ##
 ##                                                                            ##
@@ -31,30 +31,12 @@ from widgets.anim import CoubletAnimatedGifWidget
 class CoubletStreamView(QVBoxLayout):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, presenter, index, parent=None):
+    def __init__(self, presenter, parent=None):
         super().__init__(parent)
-
-        self._presenter = presenter
-
         # Store static values
-        self.index = index
-        self.visited = False
-
-        # Storage of posts for faster iteration
-        self._posts = set()
-
-        # Set GUI values
-        self.setSpacing(POST_SPACING_HEAD + POST_SPACING_TAIL)
-        self.setContentsMargins(LARGE_PADDING,
-                                POST_SPACING_HEAD,
-                                0,
-                                POST_SPACING_TAIL)
-
-
-
-        # CREATE LOADING INDICATOR
-        self._loading_indicator = CoubletAnimatedGifWidget(CONSTANTS['anim_busy'], 32, 16)
-        self._loading_indicator.hide()
+        self._presenter = presenter
+        # Build GUI
+        self._build_gui()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -82,21 +64,14 @@ class CoubletStreamView(QVBoxLayout):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def reset_unseen_posts(self):
-        # Iterate through all posts
-        for post in self._posts:
-            # And if post is not visible
-            # (not rendered) and not playing
-            if post.visibleRegion().isEmpty():
-                # Reset that post
-                post.kill()
+    def _build_gui(self):
+        # Set dimensional values
+        self.setSpacing(POST_SPACING_HEAD + POST_SPACING_TAIL)
+        self.setContentsMargins(LARGE_PADDING,
+                                POST_SPACING_HEAD,
+                                0,
+                                POST_SPACING_TAIL)
 
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def hide_all(self):
-        for post in self._posts:
-            post.hide()
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def show_all(self):
-        for post in self._posts:
-            post.show()
+        # Create loading indicator
+        self._loading_indicator = CoubletAnimatedGifWidget(CONSTANTS['anim_busy_dark'], 32, 16)
+        self._loading_indicator.hide()

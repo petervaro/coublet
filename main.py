@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.042 (20140812)                       ##
+##                       Version: 0.6.93.173 (20140814)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -41,7 +41,6 @@ DEV = 1
 class CoubletApp(QApplication):
 
     NAME = 'coublet'
-    PAGE = 5
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def __init__(self, version, *args, **kwargs):
@@ -66,7 +65,7 @@ class CoubletApp(QApplication):
         #       the cache file and ask the user if he wants to send it to us
         self._presenter.show_view()
         return self.exec_()
-        # Print all module dependencies
+        # # Print all module dependencies
         # print(*['{}: {}'.format(k, v) for k, v in sys.modules.items()], sep='\n')
 
 

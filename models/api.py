@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.032 (20140812)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                            File: models/api.py                             ##
 ##                                                                            ##
@@ -37,8 +37,10 @@ def _ruby_format(string, **kwargs):
 
 #------------------------------------------------------------------------------#
 class CoubAPI:
+
     URL = 'http://coub.com/api/v1/timeline/{}?page={}&per_page={}'
     STREAM_NAMES = 'featured',     'newest',              'random',              'hot'
+    STREAM_SYNCS = True,           True,                  False,                 True
     STREAM_JSONS = 'explore.json', 'explore/newest.json', 'explore/random.json', 'hot.json'
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -47,13 +49,16 @@ class CoubAPI:
         self.per_page = per_page
         # self.per_sync = per_sync
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def fetch_data_to_queue(self, index, current_page, queue):
         self._fetch_data_to_queue(self.STREAM_JSONS[index], current_page, queue)
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def fetch_user_data_to_queue(self, user, current_page, queue):
         self._fetch_data_to_queue('user/' + user, current_page, queue)
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def translate_fetched_data(self, data):
@@ -61,16 +66,20 @@ class CoubAPI:
         return (data.get('total_pages', 0),
                 map(self._translate_packet, data.get('coubs', ())))
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _fetch_data_to_queue(self, url, current_page, queue):
         # Format URL and start downloading JSON file
         url = self.URL.format(url, current_page, self.per_page)
         CoubletDownloadJsonThread(url, queue).start()
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _translate_packet(self, source):
         # Create new packet
         packet = {}
+
+        # TODO: Add NSFW badge if necessary
 
         # Link to thumbnail image
         try:

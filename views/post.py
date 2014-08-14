@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.067 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                            File: views/post.py                             ##
 ##                                                                            ##
@@ -26,8 +26,12 @@ import webbrowser
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QPixmap, QPainter, QBrush
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QHBoxLayout,
-                             QVBoxLayout, QGraphicsDropShadowEffect)
+from PyQt5.QtWidgets import (QLabel,
+                             QWidget,
+                             QHBoxLayout,
+                             QVBoxLayout,
+                             QApplication,
+                             QGraphicsDropShadowEffect)
 
 # Import coublet modules
 from views.vars import *
@@ -49,8 +53,10 @@ class CoubletPostView(QWidget):
         self._stop = True
         self._audio_loop = False
 
+        # Overload painter event (and use underscored names;)
         self.paintEvent = self.on_draw
 
+        # Build the GUI
         self._build_gui1()
 
 
@@ -64,23 +70,21 @@ class CoubletPostView(QWidget):
         self._link = packet['perma']
 
         # Create a video player
-        self._video = CoubletMediaPlayerWidget(width=width,
-                                               height=height,
-                                               thumb_file=packet['thumb'][1],
-                                               video_file=packet['video'][1],
-                                               looping=True,
-                                               error_font=CONSTANTS['text_font_generic'])
-
-        # Create audio player and its content
-        audio = packet['audio']
-        if audio:
-            self.audio_player = audio_player = QMediaPlayer(None, QMediaPlayer.StreamPlayback)
-            audio_player.stateChanged.connect(self.on_audio_state_changed)
-            audio_player.error.connect(self.on_error)
-            # Store MediaContent, otherwise it
-            # will be GC'd after stop() or kill()
-            self._audio = QMediaContent(QUrl(audio))
-            audio_player.setMedia(self._audio)
+        self._player = CoubletMediaPlayerWidget(width=width,
+                                                height=height,
+                                                thumb_file=packet['thumb'][1],
+                                                video_file=packet['video'][1],
+                                                audio_file=packet['audio'],
+                                                loop_audio=True,
+                                                loop_video=True,
+                                                error_font=CONSTANTS['text_font_generic'],
+                                                error_color=CONSTANTS['text_color_light_selected'],
+                                                error_background=CONSTANTS['panel_color_error'])
+        # If an error occured during the download
+        try:
+            self._player.set_error(packet['error'])
+        except KeyError:
+            pass
 
         # Build GUI (style)
         self._build_gui2(packet, width, height)
@@ -95,6 +99,7 @@ class CoubletPostView(QWidget):
                                                  l_double=self.open,
                                                  r_single=self.mute,
                                                  r_double=self.stop)
+
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def on_draw(self, event):
@@ -114,23 +119,17 @@ class CoubletPostView(QWidget):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_audio_state_changed(self, event):
-        # If playing => has to be looped => start over!
-        if self._audio_loop:
-            self.audio_player.play()
-        # If paused
-        else:
-            # Reset looping
-            self._audio_loop = True
+    def display_error(self, message):
+        # Displaye custom error message on the video
+        self._player.set_error(message)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def on_error(self):
-        # TODO: make error label appear on the video itself
-        #       test: CoubPost.load(None) --> error loading media
-        self._post = False
-        message = self.audio_player.errorString()
-        self._video.set_error(message if message else 'unknown from <AudioPlayer>')
+    def kill_if_not_visible(self):
+        # If post has no visible area
+        if self.visibleRegion().isEmpty():
+            # Reset that post
+            self.kill()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -148,24 +147,15 @@ class CoubletPostView(QWidget):
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def stop(self):
-        self._video.stop()
-        try:
-            self._audio_loop = False
-            self.audio_player.stop()
-        except AttributeError:
-            pass
+        # Reset/stop player
         self._stop = True
+        self._player.stop()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def open(self):
         # Stop playing
-        self._audio_loop = False
-        self._video.pause()
-        try:
-            self.audio_player.pause()
-        except AttributeError:
-            pass
+        self._player.pause()
         # Open in browser
         webbrowser.open_new_tab(self._link)
 
@@ -178,19 +168,11 @@ class CoubletPostView(QWidget):
         # If already muted
         elif self._mute:
             self._mute = False
-            self._video.set_volume(100)
-            try:
-                self.audio_player.setVolume(100)
-            except AttributeError:
-                pass
+            self._player.set_volume(100)
         # If needs to be muted
         else:
             self._mute = True
-            self._video.set_volume(0)
-            try:
-                self.audio_player.setVolume(0)
-            except AttributeError:
-                pass
+            self._player.set_volume(0)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -199,24 +181,14 @@ class CoubletPostView(QWidget):
         if not self._post:
             return
         # If playing
-        elif self._video.state() == QMediaPlayer.PlayingState:
+        elif self._player.state() == QMediaPlayer.PlayingState:
             # Stop playing the loop
-            self._audio_loop = False
-            self._video.pause()
-            try:
-                self.audio_player.pause()
-            except AttributeError:
-                pass
+            self._player.pause()
         # If paused
         else:
             # Start playing the loop
             self._stop = False
-            self._audio_loop = True
-            self._video.play()
-            try:
-                self.audio_player.play()
-            except AttributeError:
-                pass
+            self._player.play()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -227,7 +199,7 @@ class CoubletPostView(QWidget):
         layout.setContentsMargins(*(SMALL_PADDING,)*4)
 
         # Indicate loading
-        loading = CoubletAnimatedGifWidget(CONSTANTS['anim_busy'], 32, 16)
+        loading = CoubletAnimatedGifWidget(CONSTANTS['anim_busy_light'], 32, 16)
         loading.random_frame()
         layout.addWidget(loading, alignment=Qt.AlignHCenter)
 
@@ -257,7 +229,7 @@ class CoubletPostView(QWidget):
         main_layout.takeAt(0)
 
         # Add video and thumb to content
-        main_layout.addWidget(self._video)
+        main_layout.addWidget(self._player)
 
         # Leading and trailing padding (margins)
         height += SMALL_PADDING*2

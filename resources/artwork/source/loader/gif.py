@@ -4,9 +4,9 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.071 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
-##               File: resources/artwork/source/loading/gif.py                ##
+##                File: resources/artwork/source/loader/gif.py                ##
 ##                                                                            ##
 ##           Designed and written by Peter Varo. Copyright (c) 2014           ##
 ##             License agreement is provided in the LICENSE file              ##
@@ -22,4 +22,5 @@
 from os import system
 
 # Requires 'imagemagick'
-system('convert -delay 8 -loop 0 phases/*.png ../loading.gif')
+system('convert -delay 8 -loop 0 dark/*.png ../../motion/dark_loader.gif')
+system('convert -delay 8 -loop 0 light/*.png ../../motion/light_loader.gif')

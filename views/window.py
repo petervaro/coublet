@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.069 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                           File: views/window.py                            ##
 ##                                                                            ##
@@ -21,8 +21,12 @@
 
 # Import PyQt5 modules
 from PyQt5.QtCore import Qt, QTimer, QElapsedTimer
-from PyQt5.QtWidgets import (QWidget, QFrame, QScrollArea, QDesktopWidget,
-                             QHBoxLayout, QVBoxLayout)
+from PyQt5.QtWidgets import (QWidget,
+                             QFrame,
+                             QHBoxLayout,
+                             QVBoxLayout,
+                             QScrollArea,
+                             QDesktopWidget)
 
 # Import Coublet modules
 from views.vars import *
@@ -30,7 +34,10 @@ from models.cache import CACHE
 from models.api import CoubAPI
 from widgets.handler import CoubletMouseEventHandler
 from widgets.button import (CoubletButtonWidget,
-                            ICON_AND_LABEL, LABEL_AND_ICON, HORIZONTAL, VERTICAL)
+                            VERTICAL,
+                            HORIZONTAL,
+                            ICON_AND_LABEL,
+                            LABEL_AND_ICON)
 
 #------------------------------------------------------------------------------#
 class CoubletWindowView(QWidget):
@@ -74,18 +81,16 @@ class CoubletWindowView(QWidget):
     def on_mouse_scroll(self, event):
         # Get the "stregth" of scroll
         dy = event.pixelDelta().y()
+
         # If "hard" enoough downward
         if dy < self.SCROLL_NEGATIVE:
-            if self._presenter.load_posts():
-                print('[WINDOW] scroll: load')
+            self._presenter.load_posts()
         # If "hard" enough upward
         elif dy > self.SCROLL_POSITIVE:
-            if self._presenter.sync_posts():
-                print('[WINDOW] scroll: sync')
+            self._presenter.sync_posts()
 
         # Kill posts in stream which are not visible
-        # ??? Do this through window-presenter -> stream-presenter -> stream ???
-        self._stream.reset_unseen_posts()
+        self._presenter.reset_unseen_posts()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -115,9 +120,60 @@ class CoubletWindowView(QWidget):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def get_scroll_position(self):
+        # Get position of scroll bar
+        return self._scroll_area.verticalScrollBar().sliderPosition()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def set_scroll_position(self, value):
+        # Set position of scroll bar
+        self._scroll_area.verticalScrollBar().setSliderPosition(value)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def show_scroll_indicators(self, up=False, down=False):
+        # Place scroll indicators
+        up_space = down_space = POST_SPACING_FULL
+        if up:
+            self._scroll_up.show()
+            up_space = 0
+        if down:
+            self._scroll_down.show()
+            down_space = 0
+        # Set leading and trailing padding
+        self._posts.setContentsMargins(0, up_space, 0, down_space)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def hide_scroll_indicators(self, up=False, down=False):
+        # Remove scroll indicators
+        up_space = down_space = 0
+        if up:
+            self._scroll_up.hide()
+            up_space = POST_SPACING_FULL
+        if down:
+            self._scroll_down.hide()
+            down_space = POST_SPACING_FULL
+        # Set leading and trailing padding
+        self._posts.setContentsMargins(0, up_space, 0, down_space)
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _build_gui(self):
         # Storages
         buttons = self._buttons
+
+        # Unpack dimension data
+        x, y, width, height = CACHE['dimension']
+
+        # If position have not been set before
+        if x is NotImplemented:
+            screen = QDesktopWidget().screenGeometry()
+            x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
+        # Set window position and dimension
+        self.setGeometry(x, y, width, height)
+        self.setFixedWidth(width)
 
         # Create layout for the entire application and zero-out
         self.layout = main_layout = QVBoxLayout()
@@ -125,7 +181,7 @@ class CoubletWindowView(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
 
         # Create and add scrollable area for streams
-        posts = QScrollArea()
+        self._scroll_area = posts = QScrollArea()
         posts.setWidgetResizable(True)
         posts.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         posts.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -133,36 +189,41 @@ class CoubletWindowView(QWidget):
 
         # Create a main-stream widget
         main_stream = QWidget()
+        main_stream.setFixedWidth(width)
 
-        post_spacing = POST_SPACING_HEAD + POST_SPACING_TAIL
-
-        # TODO: rename self._posts
+        # TODO: rename self._posts to something meaningful
         self._posts = posts_layout = QVBoxLayout()
-        posts_layout.setSpacing(post_spacing)
+        posts_layout.setSpacing(POST_SPACING_FULL)
         posts_layout.setContentsMargins(0, 0, 0, 0)
 
+        # HACK: in both scroll arrows the 'padding_left' value is a hack.
+        #       The reason why the arrows are not aligned to the horizontal
+        #       center is unknown as it looks like everything is set up properly
+
         # Add scroll-up icon and text
-        posts_layout.addWidget(CoubletButtonWidget(icon=CONSTANTS['icon_scroll_up'],
-                                                   label='SCROLL UP TO REFRESH',
-                                                   font=CONSTANTS['text_font_generic'],
-                                                   palette=CONSTANTS['text_color_light'],
-                                                   order=ICON_AND_LABEL,
-                                                   orientation=VERTICAL,
-                                                   spacing=SMALL_PADDING,
-                                                   padding_top=post_spacing),
-                               alignment=Qt.AlignHCenter)
+        self._scroll_up = CoubletButtonWidget(icon=CONSTANTS['icon_scroll_up'],
+                                              label='SCROLL UP TO REFRESH',
+                                              font=CONSTANTS['text_font_generic'],
+                                              palette=CONSTANTS['text_color_light'],
+                                              order=ICON_AND_LABEL,
+                                              orientation=VERTICAL,
+                                              spacing=SMALL_PADDING,
+                                              padding_top=POST_SPACING_FULL,
+                                              padding_left=8)
+        posts_layout.addWidget(self._scroll_up, alignment=Qt.AlignHCenter)
         # Dynamic space
         posts_layout.addStretch(0)
         # Add scroll-down icon and text
-        posts_layout.addWidget(CoubletButtonWidget(icon=CONSTANTS['icon_scroll_down'],
-                                                   label='SCROLL DOWN TO LOAD MORE',
-                                                   font=CONSTANTS['text_font_generic'],
-                                                   palette=CONSTANTS['text_color_light'],
-                                                   order=LABEL_AND_ICON,
-                                                   orientation=VERTICAL,
-                                                   spacing=SMALL_PADDING,
-                                                   padding_bottom=post_spacing),
-                               alignment=Qt.AlignHCenter)
+        self._scroll_down = CoubletButtonWidget(icon=CONSTANTS['icon_scroll_down'],
+                                                label='SCROLL DOWN TO LOAD MORE',
+                                                font=CONSTANTS['text_font_generic'],
+                                                palette=CONSTANTS['text_color_light'],
+                                                order=LABEL_AND_ICON,
+                                                orientation=VERTICAL,
+                                                spacing=SMALL_PADDING,
+                                                padding_bottom=POST_SPACING_FULL,
+                                                padding_left=8)
+        posts_layout.addWidget(self._scroll_down, alignment=Qt.AlignHCenter)
 
         # Set posts' layout to stream, add stream to main layout
         main_stream.setLayout(posts_layout)
@@ -222,14 +283,3 @@ class CoubletWindowView(QWidget):
 
         self.setLayout(main_layout)
         self.setPalette(CONSTANTS['panel_color_dark'])
-
-        # Unpack dimension data
-        x, y, width, height = CACHE['dimension']
-
-        # If position have not been set before
-        if x is NotImplemented:
-            screen = QDesktopWidget().screenGeometry()
-            x, y = (screen.width() - width) / 2, (screen.height() - height) / 2
-        # Set window position and dimension
-        self.setGeometry(x, y, width, height)
-        self.setFixedWidth(width)

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.054 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                         File: presenters/stream.py                         ##
 ##                                                                            ##
@@ -27,16 +27,19 @@ from presenters.post import CoubletPostPresenter
 class CoubletStreamPresenter:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def __init__(self, root, index):
+    def __init__(self, root, index, synchronisable):
         # Store static values
+        self.synchronisable = synchronisable
         self._root = root
-        self._stream = CoubletStreamView(self, index)
+        self._stream = CoubletStreamView(self)
 
         # Set flags
-        self._not_visited = True
         self.load_lock = False
+        self.is_last_sync = False
+        self._not_visited = True
 
         # Create storages
+        self.scroll_bar_position = 0
         self._post_presenters = []
 
 
@@ -44,17 +47,23 @@ class CoubletStreamPresenter:
     def show_view(self):
         # If first time visit
         if self._not_visited:
+            self._not_visited = False
             self._root.load_posts()
         # Show all posts this stream has
         for post_presenter in self._post_presenters:
-            post_presenters.show_view()
-
+            post_presenter.show_view()
+        # If there is an on-going update
+        if self.load_lock:
+            # Indicate the stream is fetching data
+            self._stream.show_loading(self.is_last_sync)
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def hide_view(self):
         # Hide all posts this stream has
         for post_presenter in self._post_presenters:
             post_presenter.hide_view()
+        # Hide loading indicator too
+        self._stream.hide_loading()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -77,7 +86,13 @@ class CoubletStreamPresenter:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def no_more_data(self):
         # TODO: create a nice icon for this and inform user about it...
-        print('[STREAM] you have reached the end of the world - no more posts')
+        print('[STREAM] you have reached the end of the world - no more posts left')
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def record_index(self, sync):
+        # At first call of a loading-session store the insertion index
+        self._insertion_index = 0 if sync else len(self._post_presenters)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -90,14 +105,21 @@ class CoubletStreamPresenter:
             post_presenters = self._post_presenters
             # If insert post
             if sync:
-                self._insertion_index = 0
+                store_presenter = lambda p: post_presenters.insert(0, p)
                 add_to_stream = self._stream.insert_post
             # If append post
             else:
-                self._insertion_index = len(post_presenters)
+                store_presenter = post_presenters.append
                 add_to_stream = self._stream.append_post
             # Create posts and add them to
             for _ in range(count):
                 post = CoubletPostPresenter(self)
-                post_presenters.append(post)
+                store_presenter(post)
                 add_to_stream(post.get_view())
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def reset_unseen_posts(self):
+        # Kill posts in stream which are not visible
+        for post_presenter in self._post_presenters:
+            post_presenter.reset_unseen()

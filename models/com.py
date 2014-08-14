@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.024 (20140812)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                            File: models/com.py                             ##
 ##                                                                            ##
@@ -22,6 +22,7 @@
 # Import Python modules
 import json
 import threading
+import urllib.error
 import urllib.request
 
 # Module level constants
@@ -70,7 +71,10 @@ class CoubletDownloadPacketThread(threading.Thread):
             url, file = packet[file_key]
             print('Dowloading {!r} => {!r}'.format(url, file))
             if url and file:
-                _open_url(url, file)
+                try:
+                    _open_url(url, file)
+                except urllib.error.URLError as e:
+                    packet['error'] = e.reason + ' @url'
             # TODO: what happens if not url or not file ???
             print('File {!r} has been downloaded.'.format(file))
         # Put packet into queue

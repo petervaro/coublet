@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.049 (20140813)                       ##
+##                       Version: 0.6.93.172 (20140814)                       ##
 ##                                                                            ##
 ##                            File: models/app.py                             ##
 ##                                                                            ##
@@ -29,7 +29,9 @@ from models.cache import CACHE
 from models.com import CoubletDownloadPacketThread
 
 #------------------------------------------------------------------------------#
+class CoubletSyncMore(Exception): pass
 class CoubletEmptyQueue(Exception): pass
+class CoubletNothingScheduled(Exception): pass
 class CoubletNoMoreDataToFetch(Exception): pass
 
 #------------------------------------------------------------------------------#
@@ -41,6 +43,7 @@ class CoubletAppModel:
     def __init__(self):
         # Create an API reference
         self._api = CoubAPI(self.PAGE)
+
 
         # Set storages
         self._load_counters   = load_counters   = []
@@ -63,10 +66,9 @@ class CoubletAppModel:
             # Store packet IDs per stream
             packet_ids.append(set())
 
-        # CONNECTION ERROR, or any ERROR => what is it going to do?
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def load(self, index, sync):
+    def load(self, index, sync, first_call):
         # If synchronising stream
         if sync:
             total, current = self._sync_counters[index]
@@ -76,17 +78,15 @@ class CoubletAppModel:
 
         # If there is more content to load
         if current <= total:
+            # Start fetching data
             self._api.fetch_data_to_queue(index, current, self._raw_data_queues[index])
-            # Reset schedule counter
-            self._schedule_counts[index] = 0
+            # If this call is not part of a call-sequence
+            if first_call:
+                # Reset schedule counter
+                self._schedule_counts[index] = 0
         # If reached end of stream
         else:
             raise CoubletNoMoreDataToFetch
-
-
-    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def reset_sync(self, index):
-        self._sync_counters[index] = [1, 1]
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -103,27 +103,26 @@ class CoubletAppModel:
             counter[1] += 1
 
             # Get local references
-            packets_queue = self._packets_queues[index]
             packet_ids = self._packet_ids[index]
+            packets_queue = self._packets_queues[index]
 
             # Number of packets will be scheduled
             packet_count = 0
+            packet_index = self._schedule_counts[index]
             # Temporary storage for files
             files = set()
             # Get folder paths of local files
             video_path, thumb_path, avatar_path = CACHE['folders']
 
             # Process each packet
-            for i, packet in enumerate(packets):
+            for packet in packets:
                 # Get unique packet ID
                 id = packet['id']
-                # If synchronising stream and ID is already in the stream
-                if sync and id in packet_ids:
+                # If ID is already in the stream
+                if id in packet_ids:
                     continue
                 # If either not syncronising or ID is nor in the stream
                 packet_ids.add(id)
-                # Increase number of packets
-                packet_count += 1
 
                 # Create video file path and store it in temporary files
                 video_file = os.path.join(video_path, id + '.mp4')
@@ -150,16 +149,50 @@ class CoubletAppModel:
                 # If video file not already cached then
                 # download it and push it to the queue
                 if not os.path.isfile(video_file):
-                    CoubletDownloadPacketThread(i, packet, packets_queue).start()
+                    CoubletDownloadPacketThread(packet_index, packet, packets_queue).start()
                 # If cached, pushed it to queue
                 else:
-                    packets_queue.put((i, packet))
+                    packets_queue.put((packet_index, packet))
+
+                # Increase number of packets and index
+                packet_count += 1
+                packet_index += 1
 
             # Store files
             CACHE['temporary'].update(files)
+
+            # If syncronising and
+            if sync:
+                # If loaded maximum number of packets per page
+                if packet_count == self.PAGE:
+                    # Increase schedule count
+                    self._schedule_counts[index] += packet_count
+                    # Indicate queue is not ready yet
+                    raise CoubletSyncMore
+                # If number of packets is less than maximum
+                else:
+                    # Calculate total number of packets
+                    packet_count += self._schedule_counts[index]
+                    # Reset sync counter
+                    self._sync_counters[index] = [1, 1]
+            # If regular loading
+            else:
+                # If number of loaded packets are less the preferred
+                # TODO: but what if there are no more posts left?
+                if packet_count < self.PAGE:
+                    # Increase schedule count
+                    self._schedule_counts[index] += packet_count
+                    # Indicate queue is not ready yet
+                    raise CoubletSyncMore
+                # If number of packets is equal to preferred
+                else:
+                    # Calculate total number of packets
+                    packet_count += self._schedule_counts[index]
+
+            # Store scheduled packet counts
+            self._schedule_counts[index] = packet_count
             # Store and return number of scheduled packets
-            self._schedule_counts[index] += packet_count
-            return self._schedule_counts[index]
+            return packet_count
         # If JSON data not downloaded
         except queue.Empty:
             raise CoubletEmptyQueue
@@ -174,7 +207,11 @@ class CoubletAppModel:
             # Decrease schedule counter
             self._schedule_counts[index] -= 1
             # Return counter and packet
-            return self._schedule_counts[index], indexed_packet
+            return indexed_packet
         # If packet data not downloaded
         except queue.Empty:
-            raise CoubletEmptyQueue
+            # If packet scheduled but not yet arrived
+            if self._schedule_counts[index]:
+                raise CoubletEmptyQueue
+            # If nothing scheduled
+            raise CoubletNothingScheduled
