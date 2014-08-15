@@ -12,76 +12,84 @@
     </head>
 
     <body>
-        <div id="content">
-            <div id="app_full">
-                <img id="app_icon" src="static/img/coublet_app_icon.png">
-                <span id="app_name">Coublet</span>
+        <div id="main_content">
+            <div class="sub_content">
+                <div id="app_full">
+                    <img id="app_icon" src="static/img/coublet_app_icon.png">
+                    <span id="app_name">Coublet</span>
+                </div>
+
+                <div class="marketing block">
+                    <p>No browser, no flash. Minimal, efficient and blazingly fast.</p>
+                    <p>Keep up to date of the latest COUBs, right at your desktop.</p>
+                </div>
             </div>
 
-            <div id="marketing">
-                No browser, no flash. Minimal, efficient and blazingly fast.
-                Keep up to date of the latest COUBs. Right at your desktop.
-            </div>
+            <iframe id="screen_cast" class="block" src="//player.vimeo.com/video/103482845?title=0&amp;byline=0&amp;portrait=0&amp;color=FFFFFF" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-            <iframe id="screen_cast" src="//player.vimeo.com/video/103482845?title=0&amp;byline=0&amp;portrait=0&amp;color=0044cc" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+            <div class="sub_content">
+                <div class="marketing block">
+                    Minimal, stylish look, fits all operating system's design.
+                </div>
 
-            <div>
-                Minimal, stylish look, fits all operating system's design.
-            </div>
+                <div id="screen_shot" class="block">
+                    <img src="static/img/screen_shot_0_6_93.png">
+                </div>
 
-            <img src="static/img/screen_shot_0_6_93.png">
+                <div id="question_and_answer_title">
+                    <span>Questions and Answers</span>
+                </div>
 
-            <h3>Questions and Answers</h3>
+                <div class="question_and_answer">
+                    <p class="question">Why does it called 'Coublet'?</p>
+                    <p>The name Coublet has two meanings. It comes from the mix of the two words 'coub' and 'goblet' &mdash; as a symbolic vessel for all the fantastic coubs out there. It is also a mixed expression of the words 'coub' and 'applet' &mdash; as it is a desktop client for a web-service.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">Why does it called 'Coublet'?</p>
-                <p>The name Coublet has two meanings. It comes from the mix of the two words 'coub' and 'goblet' &mdash; as a symbolic vessel for all the fantastic coubs out there. It is also a mixed expression of the words 'coub' and 'applet' &mdash; as it is a desktop client for a web-service.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">How does it work?</p>
+                    <p>Coublet right now supports 4 streams: 'featured', 'newest', 'random' and 'hot'. You can click on the bottom menu, to choose any of them. If auto-update is supported by the given stream, Coublet will check if new coubs are available to download and will pull them. If you scroll down to the bottom, and then scroll again a bit more, it will load more coubs. If you scroll up to the top and then scroll again a bit more, it will synchronise the coubs from the server and will keep your stream up to date. You can left-click on a post to play or pause it. By right clicking on a coub you can mute or unmute it. Double clicking with the left mouse button, it will open the coub in your default browser. Double clicking with the right mouse button it will reset the coub. If a post is not visible &mdash; maybe you switchced to another stream or scrolled away from the post &mdash; the coub will be stopped.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">How does it work?</p>
-                <p>Coublet right now supports 4 streams: 'featured', 'newest', 'random' and 'hot'. You can click on the bottom menu, to choose any of them. If auto-update is supported by the given stream, Coublet will check if new coubs are available to download and will pull them. If you scroll down to the bottom, and then scroll again a bit more, it will load more coubs. If you scroll up to the top and then scroll again a bit more, it will synchronise the coubs from the server and will keep your stream up to date. You can left-click on a post to play or pause it. By right clicking on a coub you can mute or unmute it. Double clicking with the left mouse button, it will open the coub in your default browser. Double clicking with the right mouse button it will reset the coub. If a post is not visible &mdash; maybe you switchced to another stream or scrolled away from the post &mdash; the coub will be stopped.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">Why can't I log in?</p>
+                    <p>At the moment coub.com doesn't have an official public API &mdash; which means, the authentication is not publicly available for 3<sup>rd</sup> party app developers. (As far as I know, they are working on one right now.) Once it will be released Coublet will support personal streams, likes and recoubs as well.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">Why can't I log in?</p>
-                <p>At the moment coub.com doesn't have an official public API &mdash; which means, the authentication is not publicly available for 3<sup>rd</sup> party app developers. (As far as I know, they are working on one right now.) Once it will be released Coublet will support personal streams, likes and recoubs as well.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">What platforms Coublet is supporting?</p>
+                    <p>Coublet does not using any platform specific language or technology. It is implemented in Python and using Qt and both are supporting the vast majority of the operating systems. Therefore Coublet supports Windows, Mac and Linux too.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">What platforms Coublet is supporting?</p>
-                <p>Coublet does not using any platform specific language or technology. It is implemented in Python and using Qt and both are supporting the vast majority of the operating systems. Therefore Coublet supports Windows, Mac and Linux too.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">Will it ever be free?</p>
+                    <p>Yes it will, personally I believe in the free software movement. However, I will add a donation service soon (Flattr maybe?) and any support will be appreciated and more than welcome.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">Will it ever be free?</p>
-                <p>Yes it will, personally I believe in the free software movement. However, I will add a donation service soon (Flattr maybe?) and any support will be appreciated and more than welcome.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">How can I install it?</p>
+                    <p>Coublet is under heavy development, which means there are no bundles (packed executable binaries) available at the moment. However, you can build the project on your own if you want to test it. To do that, you will need the followings:</p>
 
-            <div class="question_and_answer">
-                <p class="question">How can I install it?</p>
-                <p>Coublet is under heavy development, which means there are no bundles (packed executable binaries) available at the moment. However, you can build the project on your own if you want to test it. To do that, you will need the followings:</p>
+                    <p>Python 3.4.1+</p>
+                    <p>PyQt5 3.5.1+</p>
 
-                <p>Python 3.4.1+</p>
-                <p>PyQt5 3.5.1+</p>
+                    <p>You may also want to disable the developer mode (as cutils is not included in the repository). All you have to do, is open main.py and set the DEV flag to False.</p>
 
-                <p>You may also want to disable the developer mode (as cutils is not included in the repository). All you have to do, is open main.py and set the DEV flag to False.</p>
+                    <p>Note: Although there is a setup.py in the project folder, it is not working yet. In the near future, Coublet will use cx_Freeze to build the standalone applications on all platforms.</p>
+                </div>
 
-                <p>Note: Although there is a setup.py in the project folder, it is not working yet. In the near future, Coublet will use cx_Freeze to build the standalone applications on all platforms.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">If I want to test it, where can I download it from?</p>
+                    <p>You can download it from the the <a href="https://github.com/petervaro/coublet">github repository of the project</a>.</p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">If I want to test it, where can I download it from?</p>
-                <p>You can download it from the the <a href="https://github.com/petervaro/coublet">github repository of the project</a>.</p>
-            </div>
+                <div class="question_and_answer">
+                    <p class="question">If I have further questions where can I ask them?</p>
+                    <p>If your question is a feature request or a bug report, I will encourage you to use the <a href="https://github.com/petervaro/coublet/issues">issue page of the project's github repository</a> to add and report those kind of things. Although if you want to say 'hi' or just contact me, feel free to drop a line to <a href="mailto:support@coublet.com?subject=Coublet%20is%20awesome!&body=Hello%20Peter,%0D%0A%0D%0AThank%20you,%20for%20this%20wonderful%20app!%0D%0A%0D%0ACheers,%0D%0A...">support@coublet.com</a></p>
+                </div>
 
-            <div class="question_and_answer">
-                <p class="question">If I have further questions where can I ask them?</p>
-                <p>If your question is a feature request or a bug report, I will encourage you to use the <a href="https://github.com/petervaro/coublet/issues">issue page of the project's github repository</a> to add and report those kind of things. Although if you want to say 'hi' or just contact me, feel free to drop a line to <a href="mailto:support@coublet.com?subject=Coublet%20is%20awesome!&body=Hello%20Peter,%0D%0A%0D%0AThank%20you,%20for%20this%20wonderful%20app!%0D%0A%0D%0ACheers,%0D%0A...">support@coublet.com</a></p>
-            </div>
-
-            <div>
-                <p>Copyright &copy; 2014 Peter Varo. All rights reserved.</p>
+                <div id="copyright">
+                    <span>Copyright &copy; 2014 Peter Varo. All rights reserved.</span>
+                </div>
             </div>
         </div>
     </body>
