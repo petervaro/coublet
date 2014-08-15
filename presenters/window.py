@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.177 (20140815)                       ##
+##                       Version: 0.6.93.180 (20140816)                       ##
 ##                                                                            ##
 ##                         File: presenters/window.py                         ##
 ##                                                                            ##
@@ -150,13 +150,6 @@ class CoubletWindowPresenter:
             stream_presenter.load_lock = False
             stream_presenter.no_more_data()
             return
-        # If there were a problem during the JSON data loading
-        except CoubletConnectionError:
-            QTimer.singleShot(self.RECONNECT,
-                              lambda: self._get_posts(index, sync, first_call))
-            # TODO: add some sort of connection counter and give up
-            #       at some point, and indicate this to the user
-            print('There was a problem during fetching the JSON data')
         # Pull posts from model and push it to view
         QTimer.singleShot(0, lambda: self._pull_posts(index, sync))
 
@@ -179,6 +172,13 @@ class CoubletWindowPresenter:
         except CoubletSyncMore:
             # Try to load more posts
             QTimer.singleShot(0, lambda: self._get_posts(index, sync, False))
+        # If there were a problem during the JSON data loading
+        except CoubletConnectionError:
+            QTimer.singleShot(self.RECONNECT,
+                              lambda: self._get_posts(index, sync, first_call))
+            # TODO: add some sort of connection counter and give up
+            #       at some point, and indicate this to the user
+            print('There was a problem during fetching the JSON data')
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #

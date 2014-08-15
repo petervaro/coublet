@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.179 (20140815)                       ##
+##                       Version: 0.6.93.182 (20140816)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -110,7 +110,7 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 11
   - file: models/app.py
-    line: 123
+    line: 128
     note: |
           check likes and shares and push them to
           presenters in a passive way -- probably
@@ -119,7 +119,7 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 12
   - file: models/app.py
-    line: 184
+    line: 189
     note: |
           but what if there are no more posts left?
 
@@ -149,7 +149,7 @@ TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 16
   - file: presenters/window.py
-    line: 157
+    line: 179
     note: |
           add some sort of connection counter and give up
           at some point, and indicate this to the user

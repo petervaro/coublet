@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.177 (20140815)                       ##
+##                       Version: 0.6.93.180 (20140816)                       ##
 ##                                                                            ##
 ##                            File: models/com.py                             ##
 ##                                                                            ##
@@ -101,5 +101,5 @@ class CoubletDownloadJsonThread(threading.Thread):
             # Put JSON file into queue
             self._queue.put(json.loads(_open_url(self._url).read().decode('utf-8')))
         except urllib.error.URLError:
-            raise CoubletConnectionError
+            self._queue.put(CoubletConnectionError)
         print('JSON data has been fetched.')
