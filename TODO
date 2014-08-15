@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.182 (20140816)                       ##
+##                       Version: 0.6.93.185 (20140816)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -109,22 +109,6 @@ TODO:
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 11
-  - file: models/app.py
-    line: 128
-    note: |
-          check likes and shares and push them to
-          presenters in a passive way -- probably
-          through an 'update-queue' ???
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
-  - file: models/app.py
-    line: 189
-    note: |
-          but what if there are no more posts left?
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
   - file: models/com.py
     line: 40
     note: |
@@ -133,26 +117,42 @@ TODO:
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
+  # 12
   - file: models/com.py
     line: 44
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 15
+  # 13
   - file: models/com.py
     line: 81
     note: |
           what happens if not url or not file ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 16
+  # 14
   - file: presenters/window.py
     line: 179
     note: |
           add some sort of connection counter and give up
           at some point, and indicate this to the user
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 15
+  - file: models/app.py
+    line: 128
+    note: |
+          check likes and shares and push them to
+          presenters in a passive way -- probably
+          through an 'update-queue' ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 16
+  - file: models/app.py
+    line: 189
+    note: |
+          but what if there are no more posts left?
 
 
 

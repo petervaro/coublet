@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.180 (20140816)                       ##
+##                       Version: 0.6.93.183 (20140816)                       ##
 ##                                                                            ##
 ##                            File: models/app.py                             ##
 ##                                                                            ##
@@ -138,7 +138,7 @@ class CoubletAppModel:
 
                 # Create thumbnail file path and store it in temporary files
                 thumb_file = os.path.join(thumb_path, id + '.jpg')
-                files.add(video_file)
+                files.add(thumb_file)
 
                 # Create avatar file path and store it in temporary files
                 avatar_url = packet['user'][0]
