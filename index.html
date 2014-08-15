@@ -5,10 +5,14 @@
         <meta name="description" content="Cross platform desktop client for COUBs">
         <meta name="keywords" content="coub,desktop,client,github,qt,python,stream,post,applet,app,viewer,audio,video,media,thread,free,open">
         <meta name="Author" content="Peter Varo">
+
+        <title>Coublet</title>
+
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
         <link rel="icon" href="favicon.ico" type="image/x-icon">
         <link rel="stylesheet" type="text/css" href="static/style/main.css">
-        <title>Coublet</title>
+        <link href="//vjs.zencdn.net/4.7/video-js.css" rel="stylesheet">
+        <script src="//vjs.zencdn.net/4.7/video.js"></script>
     </head>
 
     <body>
@@ -30,7 +34,8 @@
                 </div>
             </div>
 
-            <iframe id="screen_cast" class="block" src="//player.vimeo.com/video/103482845?title=0&amp;byline=0&amp;portrait=0&amp;color=FFFFFF" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+            <video id="screen_cast" class="video-js vjs-default-skin block" controls preload="auto" poster="static/movie/coublet_screen_cast.png" data-setup='{"example_option":true}'>
+            <source src="static/movie/coublet_screen_cast.mp4" type='video/mp4' /><p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p></video>
 
             <div class="sub_content">
                 <div class="marketing block">
