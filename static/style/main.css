@@ -33,6 +33,11 @@ sup
     top: -0.5em;
 }
 
+a
+{
+    color: #0044CC;
+}
+
 #main_content
 {
     margin-left:  auto;
