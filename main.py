@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.173 (20140814)                       ##
+##                       Version: 0.6.93.177 (20140815)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##

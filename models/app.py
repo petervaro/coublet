@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.93.177 (20140815)                       ##
 ##                                                                            ##
 ##                            File: models/app.py                             ##
 ##                                                                            ##
@@ -26,7 +26,7 @@ import queue
 # Import Coublet modules
 from models.api import CoubAPI
 from models.cache import CACHE
-from models.com import CoubletDownloadPacketThread
+from models.com import CoubletDownloadPacketThread, CoubletConnectionError
 
 #------------------------------------------------------------------------------#
 class CoubletSyncMore(Exception): pass
@@ -120,6 +120,9 @@ class CoubletAppModel:
                 id = packet['id']
                 # If ID is already in the stream
                 if id in packet_ids:
+                    # TODO: check likes and shares and push them to
+                    #       presenters in a passive way -- probably
+                    #       through an 'update-queue' ???
                     continue
                 # If either not syncronising or ID is nor in the stream
                 packet_ids.add(id)

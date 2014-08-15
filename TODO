@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.176 (20140814)                       ##
+##                       Version: 0.6.93.179 (20140815)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -32,7 +32,7 @@ FIXME:
 
 
 
-#---------------------------- 15 POSTS IN 9 FILES -----------------------------#
+#---------------------------- 16 POSTS IN 10 FILES ----------------------------#
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
@@ -43,13 +43,88 @@ TODO:
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
+  - file: presenters/stream.py
+    line: 88
+    note: |
+          create a nice icon for this and inform user about it...
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 3
+  - file: views/post.py
+    line: 260
+    note: |
+          wrapping properly!
+          title.setWordWrap(True)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 4
+  - file: views/vars.py
+    line: 100
+    note: |
+          after the design is settled, remove unnecessary font files
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 5
+  - file: views/vars.py
+    line: 110
+    note: |
+          distinguish in names:
+          type_palette_property and type_color_property
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 6
+  - file: views/window.py
+    line: 74
+    note: |
+          this call is at the wrong place
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 7
+  - file: views/window.py
+    line: 194
+    note: |
+          rename self._posts to something meaningful
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 8
+  - file: widgets/button.py
+    line: 37
+    note: |
+          do something with width and height if provided
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 9
+  - file: main.py
+    line: 36
+    note: |
+          read version from file (where will VERSION file be in the final app?)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 10
+  - file: main.py
+    line: 64
+    note: |
+          catch all exceptions, store it to a log file, write that into
+          the cache file and ask the user if he wants to send it to us
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 11
   - file: models/app.py
-    line: 181
+    line: 123
+    note: |
+          check likes and shares and push them to
+          presenters in a passive way -- probably
+          through an 'update-queue' ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 12
+  - file: models/app.py
+    line: 184
     note: |
           but what if there are no more posts left?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
+  # 13
   - file: models/com.py
     line: 40
     note: |
@@ -58,93 +133,26 @@ TODO:
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
+  # 14
   - file: models/com.py
     line: 44
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
+  # 15
   - file: models/com.py
-    line: 78
+    line: 81
     note: |
           what happens if not url or not file ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
-  - file: presenters/stream.py
-    line: 88
+  # 16
+  - file: presenters/window.py
+    line: 157
     note: |
-          create a nice icon for this and inform user about it...
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 7
-  - file: views/post.py
-    line: 260
-    note: |
-          wrapping properly!
-          title.setWordWrap(True)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
-  - file: views/vars.py
-    line: 100
-    note: |
-          after the design is settled, remove unnecessary font files
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
-  - file: views/vars.py
-    line: 110
-    note: |
-          distinguish in names:
-          type_palette_property and type_color_property
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
-  - file: views/window.py
-    line: 74
-    note: |
-          this call is at the wrong place
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
-  - file: views/window.py
-    line: 194
-    note: |
-          rename self._posts to something meaningful
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
-  - file: widgets/button.py
-    line: 37
-    note: |
-          do something with width and height if provided
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
-  - file: main.py
-    line: 36
-    note: |
-          read version from file (where will VERSION file be in the final app?)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
-  - file: main.py
-    line: 41
-    note: |
-          WINDOWS-PACKAGE
-          MINIMAL WEB-PAGE
-          NOTIFY COUB-CREW
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 15
-  - file: main.py
-    line: 70
-    note: |
-          catch all exceptions, store it to a log file, write that into
-          the cache file and ask the user if he wants to send it to us
+          add some sort of connection counter and give up
+          at some point, and indicate this to the user
 
 
 
@@ -162,7 +170,7 @@ HACK:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
   - file: main.py
-    line: 60
+    line: 54
     note: |
           find an elegant way to solve these global variables
 

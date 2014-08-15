@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.93.177 (20140815)                       ##
 ##                                                                            ##
 ##                         File: presenters/window.py                         ##
 ##                                                                            ##
@@ -28,6 +28,7 @@ from PyQt5.QtCore import QTimer
 # Import Coublet modules
 from models.api import CoubAPI
 from views.window import CoubletWindowView
+from models.com import CoubletConnectionError
 from presenters.stream import CoubletStreamPresenter
 from models.app import (CoubletSyncMore,
                         CoubletEmptyQueue,
@@ -39,6 +40,7 @@ from models.app import (CoubletSyncMore,
 class CoubletWindowPresenter:
 
     AUTO_SYNC = 60000
+    RECONNECT = 10000
     SCHEDULED_CALL = 300
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -148,6 +150,13 @@ class CoubletWindowPresenter:
             stream_presenter.load_lock = False
             stream_presenter.no_more_data()
             return
+        # If there were a problem during the JSON data loading
+        except CoubletConnectionError:
+            QTimer.singleShot(self.RECONNECT,
+                              lambda: self._get_posts(index, sync, first_call))
+            # TODO: add some sort of connection counter and give up
+            #       at some point, and indicate this to the user
+            print('There was a problem during fetching the JSON data')
         # Pull posts from model and push it to view
         QTimer.singleShot(0, lambda: self._pull_posts(index, sync))
 
