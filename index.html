@@ -21,12 +21,12 @@
 
                 <div class="marketing block">
                     <p class="marketing_line">No browser, no flash.</p>
-                    <p class="marketing_note">Simple, efficient and blazingly fast.</p>
+                    <p><i>Simple, efficient and blazingly fast.</i></p>
                 </div>
 
                 <div class="marketing block">
                     <p class="marketing_line">Right at your desktop!</p>
-                    <p class="marketing_note">Keep up to date automatically.</p>
+                    <p><i>Keep up to date automatically.</i></p>
                 </div>
             </div>
 
@@ -34,8 +34,8 @@
 
             <div class="sub_content">
                 <div class="marketing block">
-                    <p class="marketing_line">Minimalistic and stylish look</p>
-                    <p class="marketing_note">Fits the design of any operating system.</p>
+                    <p class="marketing_line">Minimalistic and stylish look.</p>
+                    <p><i>Fits the design of any operating system.</i></p>
                 </div>
 
                 <div id="screen_shot" class="block">
@@ -48,17 +48,21 @@
 
                 <div class="question_and_answer">
                     <p class="question">Why is it called 'Coublet'?</p>
-                    <p>The name Coublet has two meanings. It comes from the mix of the two words 'coub' and 'goblet' &mdash; as a symbolic vessel for all the fantastic coubs out there. It is also a mixed expression of the words 'coub' and 'applet' &mdash; as it is a desktop client for a web-service.</p>
+                    <p>The name Coublet has two meanings. It comes from the mix of the two words <i>'coub'</i> and <i>'goblet'</i> &mdash; as a symbolic vessel for all the fantastic coubs out there. It is also a mixed expression of the words <i>'coub'</i> and <i>'applet'</i> &mdash; as it is a desktop client for a web-service.</p>
                 </div>
 
                 <div class="question_and_answer">
                     <p class="question">How does it work?</p>
-                    <p>Coublet right now supports 4 streams: 'featured', 'newest', 'random' and 'hot'. You can click on the bottom menu, to choose any of them. If auto-update is supported by the given stream, Coublet will check if new coubs are available to download and will pull them. If you scroll down to the bottom, and then scroll again a bit more, it will load more coubs. If you scroll up to the top and then scroll again a bit more, it will synchronise the coubs from the server and will keep your stream up to date. You can left-click on a post to play or pause it. By right clicking on a coub you can mute or unmute it. Double clicking with the left mouse button, it will open the coub in your default browser. Double clicking with the right mouse button it will reset the coub. If a post is not visible &mdash; maybe you switched to another stream or scrolled away from the post &mdash; the coub will be stopped.</p>
+                    <p>Coublet right now supports 4 streams: <i>'featured'</i>, <i>'newest'</i>, <i>'random'</i> and <i>'hot'</i>. You can click on the bottom menu, to choose any of them. If auto-update is supported by the given stream, Coublet will check if new coubs are available to download and will pull them.</p>
+                    <br />
+                    <p>If you scroll down to the bottom, and then scroll again a bit more, it will load more coubs. If you scroll up to the top and then scroll again a bit more, it will synchronise the coubs from the server and will keep your stream up to date.</p>
+                    <br />
+                    <p>You can left-click on a post to play or pause it. By right clicking on a coub you can mute or unmute it. Double clicking with the left mouse button, it will open the coub in your default browser. Double clicking with the right mouse button it will reset the coub. If a post is not visible &mdash; maybe you switched to another stream or scrolled away from the post &mdash; the coub will be stopped.</p>
                 </div>
 
                 <div class="question_and_answer">
                     <p class="question">Why can't I log in?</p>
-                    <p>At the moment coub.com doesn't have an official public API &mdash; which means, the authentication is not publicly available for 3<sup>rd</sup> party app developers. (As far as I know, they are working on one right now. Once it will be released Coublet will support personal streams, likes and recoubs as well.)</p>
+                    <p>At the moment coub.com doesn't have an official public API &mdash; which means, the authentication is not publicly available for 3<sup>rd</sup> party app developers. <i>(As far as I know, they are working on one right now. Once it will be released Coublet will support personal streams, likes and recoubs as well.)</i></p>
                 </div>
 
                 <div class="question_and_answer">
@@ -74,13 +78,13 @@
                 <div class="question_and_answer">
                     <p class="question">How can I install it?</p>
                     <p>Coublet is under heavy development, which means there are no bundles (packed executable binaries) available at the moment. However, you can build the project on your own if you want to test it. To do that, you will need the followings:</p>
-
-                    <p>Python 3.4.1+</p>
-                    <p>PyQt5 3.5.1+</p>
-
-                    <p>You may also want to disable the developer mode (as cutils is not included in the repository). All you have to do, is open main.py and set the DEV flag to False.</p>
-
-                    <p>Note: Although there is a setup.py in the project folder, it is not working yet. In the near future, Coublet will use cx_Freeze to build the standalone applications on all platforms.</p>
+                    <br />
+                    <pre class="code_block"><code>Python  -&gt;  3.4.1+<br />PyQt5   -&gt;  3.5.1+</code></pre>
+                    <br />
+                    <br />
+                    <p>You may also want to disable the developer mode (as cutils is not included in the repository). All you have to do, is open main.py and set the <code>DEV</code> flag to <code>False</code>.</p>
+                    <br />
+                    <p><i>Note: Although there is a <code>setup.py</code> in the project folder, it is not working yet. In the near future, Coublet will use <code>cx_Freeze</code> to build the standalone applications on all platforms.</i></p>
                 </div>
 
                 <div class="question_and_answer">
@@ -90,7 +94,7 @@
 
                 <div class="question_and_answer">
                     <p class="question">If I have further questions where can I ask them?</p>
-                    <p>If your question is a feature request or a bug report, I will encourage you to use the <a href="https://github.com/petervaro/coublet/issues">issue page of the project's GitHub repository</a> to add and report those kind of things. Although if you want to say 'hi' or just contact me, feel free to drop a line to <a href="mailto:support@coublet.com?subject=Coublet%20is%20awesome!&body=Hello%20Peter,%0D%0A%0D%0AThank%20you,%20for%20this%20wonderful%20app!%0D%0A%0D%0ACheers,%0D%0A...">support@coublet.com</a></p>
+                    <p>If your question is a feature request or a bug report, I will encourage you to use the <a href="https://github.com/petervaro/coublet/issues">issue page of the project's GitHub repository</a> to add and report those kind of things. Although if you want to say <i>'hi'</i> or just contact me, feel free to drop a line to <a href="mailto:support@coublet.com?subject=Coublet%20is%20awesome!&body=Hello%20Peter,%0D%0A%0D%0AThank%20you,%20for%20this%20wonderful%20app!%0D%0A%0D%0ACheers,%0D%0A...">support@coublet.com</a></p>
                 </div>
 
                 <div id="copyright">
