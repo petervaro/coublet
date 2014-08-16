@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.185 (20140816)                       ##
+##                       Version: 0.6.93.187 (20140816)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -36,20 +36,13 @@ FIXME:
 TODO:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 1
-  - file: models/api.py
-    line: 82
-    note: |
-          Add NSFW badge if necessary
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 2
   - file: presenters/stream.py
     line: 88
     note: |
           create a nice icon for this and inform user about it...
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 3
+  # 2
   - file: views/post.py
     line: 260
     note: |
@@ -57,14 +50,14 @@ TODO:
           title.setWordWrap(True)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 4
+  # 3
   - file: views/vars.py
     line: 100
     note: |
           after the design is settled, remove unnecessary font files
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 5
+  # 4
   - file: views/vars.py
     line: 110
     note: |
@@ -72,35 +65,35 @@ TODO:
           type_palette_property and type_color_property
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 6
+  # 5
   - file: views/window.py
     line: 74
     note: |
           this call is at the wrong place
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 7
+  # 6
   - file: views/window.py
     line: 194
     note: |
           rename self._posts to something meaningful
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 8
+  # 7
   - file: widgets/button.py
     line: 37
     note: |
           do something with width and height if provided
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
+  # 8
   - file: main.py
     line: 36
     note: |
           read version from file (where will VERSION file be in the final app?)
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
+  # 9
   - file: main.py
     line: 64
     note: |
@@ -108,7 +101,7 @@ TODO:
           the cache file and ask the user if he wants to send it to us
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
+  # 10
   - file: models/com.py
     line: 40
     note: |
@@ -117,42 +110,49 @@ TODO:
           was it forbidden because the coub is private?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
+  # 11
   - file: models/com.py
     line: 44
     note: |
           probably add some timeout, and try to reconnect or something..
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
+  # 12
   - file: models/com.py
     line: 81
     note: |
           what happens if not url or not file ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
-  - file: presenters/window.py
-    line: 179
+  # 13
+  - file: models/api.py
+    line: 82
     note: |
-          add some sort of connection counter and give up
-          at some point, and indicate this to the user
+          Add NSFW badge if necessary
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 15
+  # 14
   - file: models/app.py
-    line: 128
+    line: 123
     note: |
           check likes and shares and push them to
           presenters in a passive way -- probably
           through an 'update-queue' ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 16
+  # 15
   - file: models/app.py
-    line: 189
+    line: 184
     note: |
           but what if there are no more posts left?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 16
+  - file: presenters/window.py
+    line: 183
+    note: |
+          add some sort of connection counter and give up
+          at some point, and indicate this to the user
 
 
 

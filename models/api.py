@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.93.186 (20140816)                       ##
 ##                                                                            ##
 ##                            File: models/api.py                             ##
 ##                                                                            ##
@@ -89,6 +89,9 @@ class CoubAPI:
             ifile = _ruby_format(image['template'], version='small')
         except KeyError:
             ifile = None
+        # If source is not a parsed JSON data, but an Exception
+        except TypeError:
+            raise source
         packet['thumb'] = [ifile]
 
         # Perma link

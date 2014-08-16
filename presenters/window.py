@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.180 (20140816)                       ##
+##                       Version: 0.6.93.186 (20140816)                       ##
 ##                                                                            ##
 ##                         File: presenters/window.py                         ##
 ##                                                                            ##
@@ -52,10 +52,13 @@ class CoubletWindowPresenter:
         self._auto_sync.setInterval(self.AUTO_SYNC)
         self._auto_sync.timeout.connect(self.sync_posts)
 
-        # Create stream presenters
+        # Create stream presenters and first-call flags storage
+        self._first_calls = first_calls = []
         self._stream_presenters = stream_presenters = []
         for i, has_sync in enumerate(CoubAPI.STREAM_SYNCS):
             stream_presenters.append(CoubletStreamPresenter(self, i, has_sync))
+            first_calls.append(True)
+
 
         # Load first stream
         self._active_stream_index = 0
@@ -106,8 +109,8 @@ class CoubletWindowPresenter:
         index = self._active_stream_index
         # If there is no on going loading
         if not self._stream_presenters[index].load_lock:
-            # Convenient wrapper
-            self._get_posts(index, sync=False, first_call=True)
+            self._first_calls[index] = True
+            self._get_posts(index, sync=False)
             return True
         # If stream is already loading posts
         return False
@@ -119,7 +122,8 @@ class CoubletWindowPresenter:
         # If there is no on going loading
         stream_presenter = self._stream_presenters[index]
         if not stream_presenter.load_lock and stream_presenter.synchronisable:
-            self._get_posts(index, sync=True, first_call=True)
+            self._first_calls[index] = True
+            self._get_posts(index, sync=True)
             return True
         # If stream is already loading posts
         return False
@@ -132,7 +136,7 @@ class CoubletWindowPresenter:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-    def _get_posts(self, index, sync, first_call):
+    def _get_posts(self, index, sync):
         # Get currently active stream
         index = self._active_stream_index
         # Lock further
@@ -142,7 +146,7 @@ class CoubletWindowPresenter:
         # If there is data to download
         try:
             # Start downloading posts
-            self._app.load(index, sync, first_call)
+            self._app.load(index, sync, self._first_calls[index])
             stream_presenter.record_index(sync)
             stream_presenter.show_loading(sync)
         # If there is no data to download
@@ -171,11 +175,11 @@ class CoubletWindowPresenter:
         # If there could be more
         except CoubletSyncMore:
             # Try to load more posts
-            QTimer.singleShot(0, lambda: self._get_posts(index, sync, False))
+            self._first_calls[index] = False
+            QTimer.singleShot(0, lambda: self._get_posts(index, sync))
         # If there were a problem during the JSON data loading
         except CoubletConnectionError:
-            QTimer.singleShot(self.RECONNECT,
-                              lambda: self._get_posts(index, sync, first_call))
+            QTimer.singleShot(self.RECONNECT, lambda: self._get_posts(index, sync))
             # TODO: add some sort of connection counter and give up
             #       at some point, and indicate this to the user
             print('There was a problem during fetching the JSON data')

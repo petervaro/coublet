@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.183 (20140816)                       ##
+##                       Version: 0.6.93.186 (20140816)                       ##
 ##                                                                            ##
 ##                            File: models/app.py                             ##
 ##                                                                            ##
@@ -93,14 +93,9 @@ class CoubletAppModel:
     def pull_raw_data(self, index, sync):
         # If JSON data downloaded
         try:
-            # Get new data
-            raw_data = self._raw_data_queues[index].get_nowait()
-            # If error occured during the data fetching
-            try:
-                raise raw_data
-            except TypeError:
-                # Translate packets, and store them
-                total_pages, packets = self._api.translate_fetched_data(raw_data)
+            # Translate packets, and store them
+            total_pages, packets = self._api.translate_fetched_data(
+                self._raw_data_queues[index].get_nowait())
 
             # Update counter values
             counter = (self._sync_counters if sync else self._load_counters)[index]
