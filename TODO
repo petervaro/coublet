@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.187 (20140816)                       ##
+##                       Version: 0.6.93.189 (20140817)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -125,13 +125,6 @@ TODO:
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 13
-  - file: models/api.py
-    line: 82
-    note: |
-          Add NSFW badge if necessary
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
   - file: models/app.py
     line: 123
     note: |
@@ -140,19 +133,26 @@ TODO:
           through an 'update-queue' ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 15
+  # 14
   - file: models/app.py
     line: 184
     note: |
           but what if there are no more posts left?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 16
+  # 15
   - file: presenters/window.py
     line: 183
     note: |
           add some sort of connection counter and give up
           at some point, and indicate this to the user
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 16
+  - file: models/api.py
+    line: 86
+    note: |
+          Add NSFW badge if necessary
 
 
 

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.186 (20140816)                       ##
+##                       Version: 0.6.93.188 (20140817)                       ##
 ##                                                                            ##
 ##                            File: models/api.py                             ##
 ##                                                                            ##
@@ -62,9 +62,13 @@ class CoubAPI:
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def translate_fetched_data(self, data):
-        # Return total number of pages and the translated packets
-        return (data.get('total_pages', 0),
-                map(self._translate_packet, data.get('coubs', ())))
+        try:
+            # Return total number of pages and the translated packets
+            return (data.get('total_pages', 0),
+                    map(self._translate_packet, data.get('coubs', ())))
+        # If data is not a parsed JSON data, but an Exception
+        except AttributeError:
+            raise data
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -89,9 +93,6 @@ class CoubAPI:
             ifile = _ruby_format(image['template'], version='small')
         except KeyError:
             ifile = None
-        # If source is not a parsed JSON data, but an Exception
-        except TypeError:
-            raise source
         packet['thumb'] = [ifile]
 
         # Perma link
