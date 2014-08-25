@@ -1,10 +1,11 @@
+#!/usr/bin/env python3
 ## INFO ########################################################################
 ##                                                                            ##
 ##                                  COUBLET                                   ##
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.177 (20140815)                       ##
+##                       Version: 0.6.93.192 (20140824)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -82,7 +83,7 @@ if __name__ == '__main__':
         exceptions = cutils.clic.EXCEPTIONS + ('clic.py', 'cver.py', 'ccom.py',
                                                'comment.py', 'check.py', 'table.py')
         # Update version
-        version = cutils.cver.version(sub_max=9, rev_max=99, build_max=999)[:3]
+        version = cutils.cver.version('.', sub_max=9, rev_max=99, build_max=999)[:3]
         # Collect all special comments
         cutils.ccom.collect('.', exceptions=exceptions)
         # Update header comments

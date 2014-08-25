@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.180 (20140816)                       ##
+##                       Version: 0.6.93.193 (20140824)                       ##
 ##                                                                            ##
 ##                            File: models/com.py                             ##
 ##                                                                            ##
@@ -77,7 +77,11 @@ class CoubletDownloadPacketThread(threading.Thread):
                 try:
                     _open_url(url, file)
                 except urllib.error.URLError as e:
-                    packet['error'] = e.reason + ' @url'
+                    try:
+                        packet['error'] = e.reason + '@url'
+                    # When 'reason' is not a string object
+                    except TypeError:
+                        packet['error'] = '{!r} @url'.format(e.reason)
             # TODO: what happens if not url or not file ???
             print('File {!r} has been downloaded.'.format(file))
         # Put packet into queue
@@ -100,6 +104,6 @@ class CoubletDownloadJsonThread(threading.Thread):
         try:
             # Put JSON file into queue
             self._queue.put(json.loads(_open_url(self._url).read().decode('utf-8')))
-        except urllib.error.URLError:
+        except (urllib.error.URLError, ConnectionResetError):
             self._queue.put(CoubletConnectionError)
         print('JSON data has been fetched.')

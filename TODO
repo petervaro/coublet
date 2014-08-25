@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.189 (20140817)                       ##
+##                       Version: 0.6.93.197 (20140825)                       ##
 ##                                                                            ##
 ##                                 File: TODO                                 ##
 ##                                                                            ##
@@ -87,44 +87,6 @@ TODO:
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 8
-  - file: main.py
-    line: 36
-    note: |
-          read version from file (where will VERSION file be in the final app?)
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 9
-  - file: main.py
-    line: 64
-    note: |
-          catch all exceptions, store it to a log file, write that into
-          the cache file and ask the user if he wants to send it to us
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 10
-  - file: models/com.py
-    line: 40
-    note: |
-          handle connection errors, like:
-          urllib.error.HTTPError: HTTP Error 403: Forbidden
-          was it forbidden because the coub is private?
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 11
-  - file: models/com.py
-    line: 44
-    note: |
-          probably add some timeout, and try to reconnect or something..
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 12
-  - file: models/com.py
-    line: 81
-    note: |
-          what happens if not url or not file ???
-
-  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 13
   - file: models/app.py
     line: 123
     note: |
@@ -133,14 +95,21 @@ TODO:
           through an 'update-queue' ???
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 14
+  # 9
   - file: models/app.py
     line: 184
     note: |
           but what if there are no more posts left?
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 15
+  # 10
+  - file: models/api.py
+    line: 86
+    note: |
+          Add NSFW badge if necessary
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 11
   - file: presenters/window.py
     line: 183
     note: |
@@ -148,11 +117,42 @@ TODO:
           at some point, and indicate this to the user
 
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-  # 16
-  - file: models/api.py
-    line: 86
+  # 12
+  - file: models/com.py
+    line: 40
     note: |
-          Add NSFW badge if necessary
+          handle connection errors, like:
+          urllib.error.HTTPError: HTTP Error 403: Forbidden
+          was it forbidden because the coub is private?
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 13
+  - file: models/com.py
+    line: 44
+    note: |
+          probably add some timeout, and try to reconnect or something..
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 14
+  - file: models/com.py
+    line: 85
+    note: |
+          what happens if not url or not file ???
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 15
+  - file: main.py
+    line: 37
+    note: |
+          read version from file (where will VERSION file be in the final app?)
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+  # 16
+  - file: main.py
+    line: 65
+    note: |
+          catch all exceptions, store it to a log file, write that into
+          the cache file and ask the user if he wants to send it to us
 
 
 
@@ -170,7 +170,7 @@ HACK:
   #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
   # 2
   - file: main.py
-    line: 54
+    line: 55
     note: |
           find an elegant way to solve these global variables
 

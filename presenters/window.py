@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.186 (20140816)                       ##
+##                       Version: 0.6.93.192 (20140824)                       ##
 ##                                                                            ##
 ##                         File: presenters/window.py                         ##
 ##                                                                            ##
@@ -182,7 +182,7 @@ class CoubletWindowPresenter:
             QTimer.singleShot(self.RECONNECT, lambda: self._get_posts(index, sync))
             # TODO: add some sort of connection counter and give up
             #       at some point, and indicate this to the user
-            print('There was a problem during fetching the JSON data')
+            print('Reconnecting, as there was a problem during fetching')
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -198,6 +198,6 @@ class CoubletWindowPresenter:
             QTimer.singleShot(self.SCHEDULED_CALL, lambda: self._push_posts(index, sync))
         # If queue is empty and no packets were scheduled
         except CoubletNothingScheduled:
-            print('All threads are finished')
+            print('Thread is finished')
             # Release stream
             self._stream_presenters[index].load_lock = False
