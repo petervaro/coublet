@@ -5,7 +5,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.192 (20140824)                       ##
+##                       Version: 0.6.95.240 (20141003)                       ##
 ##                                                                            ##
 ##                               File: main.py                                ##
 ##                                                                            ##
@@ -35,7 +35,7 @@ from views.vars import set_gui_constants, DEFAULT_WINDOW_POS_DIM
 
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
-VERSION = 0, 6, 93
+VERSION = 0, 6, 95
 DEV = 1
 
 #------------------------------------------------------------------------------#
@@ -58,6 +58,9 @@ class CoubletApp(QApplication):
 
         self._model = CoubletAppModel()
         self._presenter = CoubletWindowPresenter(self._model, self.NAME)
+
+        # Start auto-saving
+        self._presenter.set_auto_save(CACHE.auto_save)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #

@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.93.220 (20140928)                       ##
 ##                                                                            ##
 ##                           File: models/cache.py                            ##
 ##                                                                            ##
@@ -85,6 +85,20 @@ class CoubletCacheFile:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _serialise(self):
+        # Serialise data
+        with open(self._file, 'wb') as cache_file:
+            pickle.dump(self._data, cache_file, pickle.HIGHEST_PROTOCOL)
+            print('Cache file serialised.')
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def auto_save(self):
+        # Public wrapper for saving data
+        self._serialise()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def save(self):
         # Get local reference
         data = self._data
@@ -103,9 +117,8 @@ class CoubletCacheFile:
         data['latest'] = data['temporary']
         data['temporary'] = set()
 
-        # Serialise new data
-        with open(self._file, 'wb') as cache_file:
-            pickle.dump(data, cache_file, pickle.HIGHEST_PROTOCOL)
+        # Save data
+        self._serialise()
 
 
 #------------------------------------------------------------------------------#

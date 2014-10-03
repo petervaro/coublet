@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.95.232 (20141003)                       ##
 ##                                                                            ##
 ##                            File: views/post.py                             ##
 ##                                                                            ##
@@ -67,7 +67,7 @@ class CoubletPostView(QWidget):
         height = int(width*packet['ratio'])
 
         # Store static values
-        self._link = packet['perma']
+        self._link = packet['perma_link']
 
         # Create a video player
         self._player = CoubletMediaPlayerWidget(width=width,
@@ -192,6 +192,12 @@ class CoubletPostView(QWidget):
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def update(self, packet):
+        self._likes_text.setText(packet['likes'])
+        self._share_text.setText(packet['share'])
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _build_gui1(self):
         # Create layout object for full post and zero-out
         self._layout = layout = QVBoxLayout()
@@ -287,7 +293,7 @@ class CoubletPostView(QWidget):
         likes_icon = QLabel()
         likes_icon.setPixmap(CONSTANTS['icon_like'])
 
-        likes_text = QLabel(packet['likes'])
+        self._likes_text = likes_text = QLabel(packet['likes'])
         likes_text.setFont(CONSTANTS['text_font_numbers'])
         likes_text.setPalette(CONSTANTS['text_color_dark'])
 
@@ -305,7 +311,7 @@ class CoubletPostView(QWidget):
         share_icon = QLabel()
         share_icon.setPixmap(CONSTANTS['icon_recoub'])
 
-        share_text = QLabel(packet['share'])
+        self._share_text = share_text = QLabel(packet['share'])
         share_text.setFont(CONSTANTS['text_font_numbers'])
         share_text.setPalette(CONSTANTS['text_color_dark'])
 

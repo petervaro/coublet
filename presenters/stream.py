@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.172 (20140814)                       ##
+##                       Version: 0.6.95.221 (20141003)                       ##
 ##                                                                            ##
 ##                         File: presenters/stream.py                         ##
 ##                                                                            ##
@@ -40,7 +40,9 @@ class CoubletStreamPresenter:
 
         # Create storages
         self.scroll_bar_position = 0
-        self._post_presenters = []
+        # TODO: is it possible to use an OrderedDict instead of this two ???
+        self._post_presenters_by_order = []
+        self._post_presenters_by_perma = {}
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -50,17 +52,18 @@ class CoubletStreamPresenter:
             self._not_visited = False
             self._root.load_posts()
         # Show all posts this stream has
-        for post_presenter in self._post_presenters:
+        for post_presenter in self._post_presenters_by_order:
             post_presenter.show_view()
         # If there is an on-going update
         if self.load_lock:
             # Indicate the stream is fetching data
             self._stream.show_loading(self.is_last_sync)
 
+
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def hide_view(self):
         # Hide all posts this stream has
-        for post_presenter in self._post_presenters:
+        for post_presenter in self._post_presenters_by_order:
             post_presenter.hide_view()
         # Hide loading indicator too
         self._stream.hide_loading()
@@ -72,9 +75,24 @@ class CoubletStreamPresenter:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def get_links(self):
+        return self._post_presenters_by_perma.keys()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def push_loaded_posts(self, index, packet):
-        # Push packet info to corresponding post
-        self._post_presenters[self._insertion_index + index].load(packet)
+        # Get post-presenter by index
+        post_presenter = self._post_presenters_by_order[self._insertion_index + index]
+        # Push packet info to corresponding post-presenter
+        post_presenter.load(packet)
+        # Store presenter by perma-link
+        self._post_presenters_by_perma[packet['perma']] = post_presenter
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def push_loaded_updates(self, packet):
+        # TODO: can this ever raise KeyError ???
+        self._post_presenters_by_perma[packet['perma']].update(packet)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -92,7 +110,7 @@ class CoubletStreamPresenter:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def record_index(self, sync):
         # At first call of a loading-session store the insertion index
-        self._insertion_index = 0 if sync else len(self._post_presenters)
+        self._insertion_index = 0 if sync else len(self._post_presenters_by_order)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -102,7 +120,7 @@ class CoubletStreamPresenter:
         # If new posts scheduled
         if count:
             # Get local reference
-            post_presenters = self._post_presenters
+            post_presenters = self._post_presenters_by_order
             # If insert post
             if sync:
                 store_presenter = lambda p: post_presenters.insert(0, p)
@@ -121,5 +139,6 @@ class CoubletStreamPresenter:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def reset_unseen_posts(self):
         # Kill posts in stream which are not visible
-        for post_presenter in self._post_presenters:
+        for post_presenter in self._post_presenters_by_order:
             post_presenter.reset_unseen()
+

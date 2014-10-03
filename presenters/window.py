@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.192 (20140824)                       ##
+##                       Version: 0.6.95.237 (20141003)                       ##
 ##                                                                            ##
 ##                         File: presenters/window.py                         ##
 ##                                                                            ##
@@ -39,8 +39,10 @@ from models.app import (CoubletSyncMore,
 #------------------------------------------------------------------------------#
 class CoubletWindowPresenter:
 
-    AUTO_SYNC = 60000
-    RECONNECT = 10000
+    RECONNECT   = 10000
+    AUTO_SAVE   = 40000
+    AUTO_SYNC   = 60000
+    AUTO_UPDATE = 90000
     SCHEDULED_CALL = 300
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -48,9 +50,16 @@ class CoubletWindowPresenter:
         # Set static values
         self._app = app_model
         self._window = CoubletWindowView(self, app_name)
+
+        # Set up auto-sync timer
         self._auto_sync = QTimer()
         self._auto_sync.setInterval(self.AUTO_SYNC)
         self._auto_sync.timeout.connect(self.sync_posts)
+
+        # Set up auto-update timer
+        self._auto_update = QTimer()
+        self._auto_update.setInterval(self.AUTO_UPDATE)
+        self._auto_update.timeout.connect(self.update_posts)
 
         # Create stream presenters and first-call flags storage
         self._first_calls = first_calls = []
@@ -59,13 +68,15 @@ class CoubletWindowPresenter:
             stream_presenters.append(CoubletStreamPresenter(self, i, has_sync))
             first_calls.append(True)
 
-
         # Load first stream
         self._active_stream_index = 0
         first_stream = self._stream_presenters[0]
         self._window.set_stream(0, first_stream.get_view())
         first_stream.show_view()
+
+        # Start timers
         self._auto_sync.start()
+        self._auto_update.start()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -76,6 +87,20 @@ class CoubletWindowPresenter:
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def hide_view(self):
         self._window.hide()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def set_auto_save(self, callback):
+        # These are here and not in the constructor, because CACHE file is only
+        # available for CoubletApp, which is not available from CoubletAppModel
+        # nor from this (CoubletWindowPresenter) -- that's because all QTimer
+        # calls should happen in the CoubletApp presenter...
+        # TODO: consider redesigning object hierarchy => should this presenter
+        #       have to start the auto-save call chain?
+        self._auto_save = QTimer()
+        self._auto_save.setInterval(self.AUTO_SAVE)
+        self._auto_save.timeout.connect(callback)
+        self._auto_save.start()
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -127,6 +152,16 @@ class CoubletWindowPresenter:
             return True
         # If stream is already loading posts
         return False
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def update_posts(self):
+        index = self._active_stream_index
+
+        # Start downloading updates
+        self._app.update(index, self._stream_presenters[index].get_links())
+        # Start pushing updates
+        self._push_updates(index)
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -182,7 +217,7 @@ class CoubletWindowPresenter:
             QTimer.singleShot(self.RECONNECT, lambda: self._get_posts(index, sync))
             # TODO: add some sort of connection counter and give up
             #       at some point, and indicate this to the user
-            print('Reconnecting, as there was a problem during fetching')
+            print('Reconnecting, as there was a problem during fetching ...')
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
@@ -198,6 +233,26 @@ class CoubletWindowPresenter:
             QTimer.singleShot(self.SCHEDULED_CALL, lambda: self._push_posts(index, sync))
         # If queue is empty and no packets were scheduled
         except CoubletNothingScheduled:
-            print('Thread is finished')
+            print('Thread is finished.')
             # Release stream
             self._stream_presenters[index].load_lock = False
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def _push_updates(self, index):
+        # If packets already in the queue
+        try:
+            # Pull as many packates as possible from the queue
+            while True:
+                self._stream_presenters[index].push_loaded_updates(self._app.pull_updates(index))
+        # If queue is empty but packets were scheduled
+        except CoubletEmptyQueue:
+            # Try pulling packets later
+            QTimer.singleShot(self.SCHEDULED_CALL, lambda: self._push_updates(index))
+        # If there was a problem during the JSON data loading
+        except CoubletConnectionError:
+            QTimer.singleShot(self.RECONNECT, lambda: self._push_updates(index))
+            print('[ ERROR ] _push_updates(): handled')
+        # If queue is empty and no packates scheduled
+        except CoubletNothingScheduled:
+            print('All posts are updated.')

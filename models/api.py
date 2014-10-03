@@ -4,7 +4,7 @@
 ##                                  =======                                   ##
 ##                                                                            ##
 ##          Cross-platform desktop client to follow posts from COUB           ##
-##                       Version: 0.6.93.188 (20140817)                       ##
+##                       Version: 0.6.95.232 (20141003)                       ##
 ##                                                                            ##
 ##                            File: models/api.py                             ##
 ##                                                                            ##
@@ -38,7 +38,8 @@ def _ruby_format(string, **kwargs):
 #------------------------------------------------------------------------------#
 class CoubAPI:
 
-    URL = 'http://coub.com/api/v1/timeline/{}?page={}&per_page={}'
+    POST_URL   = 'http://coub.com/coubs/{}.json'
+    STREAM_URL = 'http://coub.com/api/v1/timeline/{}?page={}&per_page={}'
     STREAM_NAMES = 'featured',     'newest',              'random',              'hot'
     STREAM_SYNCS = True,           True,                  False,                 True
     STREAM_JSONS = 'explore.json', 'explore/newest.json', 'explore/random.json', 'hot.json'
@@ -61,6 +62,11 @@ class CoubAPI:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def fetch_update_to_queue(self, link, queue):
+        CoubletDownloadJsonThread(self.POST_URL.format(link), queue).start()
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def translate_fetched_data(self, data):
         try:
             # Return total number of pages and the translated packets
@@ -72,9 +78,19 @@ class CoubAPI:
 
 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+    def translate_fetched_update(self, data):
+        try:
+            # Return translated packet
+            return self._translate_packet(data)
+        # If data is not a parsed JSON data but an Exception
+        except (AttributeError, TypeError) as e:
+            raise data
+
+
+    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
     def _fetch_data_to_queue(self, url, current_page, queue):
-        # Format URL and start downloading JSON file
-        url = self.URL.format(url, current_page, self.per_page)
+        # Format STREAM_URL and start downloading JSON file
+        url = self.STREAM_URL.format(url, current_page, self.per_page)
         CoubletDownloadJsonThread(url, queue).start()
 
 
@@ -84,6 +100,8 @@ class CoubAPI:
         packet = {}
 
         # TODO: Add NSFW badge if necessary
+
+        # TODO: Make the key names more consistent in packets <= clean-up !!!
 
         # Link to thumbnail image
         try:
@@ -97,10 +115,13 @@ class CoubAPI:
 
         # Perma link
         try:
-            perma = 'http://coub.com/view/' + source['permalink']
+            perma = source['permalink']
+            perma_link = 'http://coub.com/view/' + perma
         except KeyError:
-            perma = 'http://coub.com'
+            perma = None
+            perma_link = 'http://coub.com'
         packet['perma'] = perma
+        packet['perma_link'] = perma_link
 
         # Set aspect ration
         try:
