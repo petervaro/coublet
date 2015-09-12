@@ -47,8 +47,12 @@ POST_SPACING_FULL = POST_SPACING_HEAD + POST_SPACING_TAIL
 FOREGROUND = 0
 BACKGROUND = 1
 
+# TODO: if platform does not support visible scrollbar
+VISIBLE_SCROLLBAR = 15
+
 MEDIA_WIDTH = 320
-DEFAULT_WINDOW_POS_DIM = NotImplemented, 0, MEDIA_WIDTH + 2*POST_SPACING_FULL, 768
+DEFAULT_WINDOW_POS_DIM = (NotImplemented, 0,
+                          MEDIA_WIDTH + 2*POST_SPACING_FULL + VISIBLE_SCROLLBAR, 768)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 _SANS = 'Source Sans Pro'
@@ -84,7 +88,7 @@ def _static(file, rotate=None):
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 def _palette(parent, place, string, alpha=100):
-    palette = QPalette(parent)
+    palette = QPalette()
     palette.setColor(QPalette.Background if place else QPalette.Foreground,
                      _rgb(string, '{:X}'.format(round(2.55 * alpha))))
     return palette

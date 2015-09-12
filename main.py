@@ -36,7 +36,7 @@ from views.vars import set_gui_constants, DEFAULT_WINDOW_POS_DIM
 # Module level constants
 # TODO: read version from file (where will VERSION file be in the final app?)
 VERSION = 0, 6, 95
-DEV = 1
+DEV = 0
 
 #------------------------------------------------------------------------------#
 class CoubletApp(QApplication):

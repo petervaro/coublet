@@ -19,6 +19,9 @@
 ##                                                                            ##
 ######################################################################## INFO ##
 
+# Import python modules
+from textwrap import fill
+
 # Import PyQt5 modules
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QUrl
@@ -112,7 +115,7 @@ class CoubletMediaPlayerWidget(QWidget):
         self._thumb.hide()
         layout = QVBoxLayout()
         error_msg = self._video_player.errorString()
-        error_label = QLabel('ERROR: {}'.format(message.upper()))
+        error_label = QLabel(fill('ERROR: {}'.format(message.upper()), width=32))
         if self._error_font:
             error_label.setFont(self._error_font)
         if self._error_color:
